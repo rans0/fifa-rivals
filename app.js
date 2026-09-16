@@ -586,6 +586,104 @@ async function downloadCard(s) {
   });
 }
 
+/* ---------- standings card (canvas → PNG, top 5) ---------- */
+
+function drawStandings() {
+  const W = 1080, H = 1040;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+
+  const INK = '#0f1512', MUT = '#7a857f', RED = '#e11d2e', LINE = '#e4e8e5';
+  const M = 70;
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  const FONT = (wgt, size) => `${wgt} ${size}px 'Barlow Semi Condensed', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif`;
+  const BEB = (size) => `400 ${size}px 'Bebas Neue', 'Arial Narrow', sans-serif`;
+
+  // bookends: masthead + footer bar (sama seperti stat card)
+  ctx.fillStyle = INK; ctx.fillRect(0, 0, W, 96);
+  ctx.fillStyle = RED; ctx.fillRect(0, 96, W, 10);
+  ctx.fillStyle = INK; ctx.fillRect(0, H - 90, W, 90);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffffff'; ctx.font = BEB(50);
+  ctx.fillText('FIFA RIVALS', M + 26, 66);
+  ctx.fillStyle = RED;
+  ctx.beginPath();
+  ctx.moveTo(M, 36); ctx.lineTo(M + 14, 36); ctx.lineTo(M + 4, 66); ctx.lineTo(M - 10, 66);
+  ctx.closePath(); ctx.fill();
+  ctx.textAlign = 'right'; ctx.fillStyle = '#9aa39e'; ctx.font = FONT(600, 25);
+  ctx.fillText('fifa-rivals.projectlabs.id', W - M, 62);
+
+  // title
+  ctx.textAlign = 'left';
+  ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
+  ctx.fillText('LEAGUE STANDINGS', M, 178);
+  ctx.fillStyle = INK; ctx.font = BEB(100);
+  ctx.fillText('TOP 5', M, 272);
+
+  // column labels + hairline
+  const top5 = [...S.list].sort((a, b) => a.rank - b.rank).slice(0, 5);
+  const xRec = W - M - 330, xWin = W - M - 160, xElo = W - M;
+  ctx.fillStyle = MUT; ctx.font = FONT(700, 22);
+  ctx.fillText('PLAYER', M + 96, 336);
+  ctx.textAlign = 'right';
+  ctx.fillText('W-D-L', xRec, 336);
+  ctx.fillText('WIN %', xWin, 336);
+  ctx.fillText('ELO', xElo, 336);
+  ctx.strokeStyle = INK; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(M, 356); ctx.lineTo(W - M, 356); ctx.stroke();
+
+  // rows
+  const RH = 112;
+  top5.forEach((s, i) => {
+    const by = 356 + i * RH + 74; // baseline teks baris
+    ctx.textAlign = 'left';
+    ctx.fillStyle = s.rank === 1 ? RED : INK;
+    ctx.font = BEB(60);
+    ctx.fillText(String(s.rank), M, by);
+    ctx.fillStyle = INK;
+    let size = 56;
+    ctx.font = BEB(size);
+    const name = s.name.toUpperCase();
+    while (ctx.measureText(name).width > 420 && size > 28) {
+      size -= 4; ctx.font = BEB(size);
+    }
+    ctx.fillText(name, M + 96, by - 6);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
+    ctx.fillText(`${s.w}-${s.d}-${s.l}`, xRec, by - 8);
+    ctx.fillStyle = INK;
+    ctx.fillText(String(wr(s)), xWin, by - 8);
+    ctx.font = BEB(64);
+    ctx.fillText(String(Math.round(s.elo)), xElo, by - 2);
+    if (i < top5.length - 1) {
+      ctx.strokeStyle = LINE; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(M, 356 + (i + 1) * RH); ctx.lineTo(W - M, 356 + (i + 1) * RH); ctx.stroke();
+    }
+  });
+
+  // footer bar
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffffff'; ctx.font = BEB(44);
+  ctx.fillText('FIFA RIVALS LEAGUE', M, H - 34);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#9aa39e'; ctx.font = FONT(600, 24);
+  ctx.fillText(`generated ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}`, W - M, H - 34);
+
+  return cv;
+}
+
+async function downloadStandings() {
+  await document.fonts.ready;
+  drawStandings().toBlob((blob) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'fifa-rivals-top-5-standings.png';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+
 /* ---------- router ---------- */
 
 const VIEWS = ['leaderboard', 'h2h', 'clubs', 'matches', 'player'];
@@ -636,6 +734,7 @@ async function boot() {
   renderH2H();
 
   $('#lb-search').addEventListener('input', renderLeaderboard);
+  $('#dl-standings').addEventListener('click', downloadStandings);
   document.querySelectorAll('#lb-table thead th[data-key]').forEach((th) =>
     th.addEventListener('click', () => {
       const k = th.dataset.key;

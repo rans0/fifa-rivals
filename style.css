@@ -353,6 +353,7 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 }
 .btn:hover { background: var(--ink); color: #fff; }
 .btn:active { transform: translateY(1px); }
+.view-head .btn { margin: 0 0 0 12px; white-space: nowrap; }
 .back { display: inline-block; margin-top: 22px; color: var(--mut); font: 500 13px var(--font-body); }
 .back:hover { color: var(--acc); }
 
