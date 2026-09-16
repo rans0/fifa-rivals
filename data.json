@@ -9,7 +9,8 @@
     { "id": "abe", "name": "Abe" },
     { "id": "tegar", "name": "Tegar" },
     { "id": "inyo", "name": "Inyo" },
-    { "id": "alvin", "name": "Alvin" }
+    { "id": "alvin", "name": "Alvin" },
+    { "id": "dzikri", "name": "Dzikri" }
   ],
   "matches": [
     { "date": "2026-09-14", "a": "aran", "aClub": "Arsenal", "aScore": 1, "b": "tammam", "bClub": "Real Madrid", "bScore": 4 },
@@ -24,6 +25,7 @@
     { "date": "2026-09-16", "a": "abe", "aClub": "Inter Milan", "aScore": 5, "b": "inyo", "bClub": "Real Betis", "bScore": 3 },
     { "date": "2026-09-16", "a": "abe", "aClub": "Inter Milan", "aScore": 4, "b": "inyo", "bClub": "Real Betis", "bScore": 7 },
     { "date": "2026-09-16", "a": "abe", "aClub": "Bayern Munchen", "aScore": 3, "b": "alvin", "bClub": "PSG", "bScore": 6 },
-    { "date": "2026-09-16", "a": "abe", "aClub": "Arsenal", "aScore": 5, "b": "alvin", "bClub": "Manchester City", "bScore": 7 }
+    { "date": "2026-09-16", "a": "abe", "aClub": "Arsenal", "aScore": 5, "b": "alvin", "bClub": "Manchester City", "bScore": 7 },
+    { "date": "2026-09-16", "a": "abe", "aClub": "Real Madrid", "aScore": 2, "b": "dzikri", "bClub": "Liverpool", "bScore": 8 }
   ]
 }
