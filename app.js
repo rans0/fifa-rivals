@@ -594,11 +594,20 @@ function drawStandings() {
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
 
-  const INK = '#0f1512', MUT = '#7a857f', RED = '#e11d2e', LINE = '#e4e8e5';
+  const INK = '#0f1512', MUT = '#7a857f', RED = '#e11d2e', LINE = '#e4e8e5', PAPER = '#f7f8f7';
   const M = 70;
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   const FONT = (wgt, size) => `${wgt} ${size}px 'Barlow Semi Condensed', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif`;
   const BEB = (size) => `400 ${size}px 'Bebas Neue', 'Arial Narrow', sans-serif`;
+  const rr = (x, y, w, h, rad) => {
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rad);
+    ctx.arcTo(x + w, y + h, x, y + h, rad);
+    ctx.arcTo(x, y + h, x, y, rad);
+    ctx.arcTo(x, y, x + w, y, rad);
+    ctx.closePath();
+  };
 
   // bookends: masthead + footer bar (sama seperti stat card)
   ctx.fillStyle = INK; ctx.fillRect(0, 0, W, 96);
@@ -623,9 +632,9 @@ function drawStandings() {
 
   // column labels + hairline
   const top5 = [...S.list].sort((a, b) => a.rank - b.rank).slice(0, 5);
-  const xRec = W - M - 330, xWin = W - M - 160, xElo = W - M;
+  const xRec = W - M - 440, xWin = W - M - 260, xElo = W - M;
   ctx.fillStyle = MUT; ctx.font = FONT(700, 22);
-  ctx.fillText('PLAYER', M + 96, 336);
+  ctx.fillText('PLAYER', M + 56, 336);
   ctx.textAlign = 'right';
   ctx.fillText('W-D-L', xRec, 336);
   ctx.fillText('WIN %', xWin, 336);
@@ -636,26 +645,73 @@ function drawStandings() {
   // rows
   const RH = 112;
   top5.forEach((s, i) => {
-    const by = 356 + i * RH + 74; // baseline teks baris
+    const rs = 356 + i * RH; // top baris
+    const cy = rs + RH / 2; // pusat vertikal baris
     ctx.textAlign = 'left';
     ctx.fillStyle = s.rank === 1 ? RED : INK;
     ctx.font = BEB(60);
-    ctx.fillText(String(s.rank), M, by);
-    ctx.fillStyle = INK;
+    ctx.fillText(String(s.rank), M, rs + 76);
+    // nama — badge pergerakan nempel di ujung kanan nama
+    const xName = M + 56;
     let size = 56;
     ctx.font = BEB(size);
     const name = s.name.toUpperCase();
-    while (ctx.measureText(name).width > 420 && size > 28) {
+    while (ctx.measureText(name).width > 340 && size > 28) {
       size -= 4; ctx.font = BEB(size);
     }
-    ctx.fillText(name, M + 96, by - 6);
+    ctx.fillStyle = INK;
+    ctx.fillText(name, xName, rs + 52);
+    const nameW = ctx.measureText(name).width;
+    // badge pergerakan rank vs sebelum match terakhir: hijau naik · merah turun · paper tetap
+    const mv = s.move;
+    const bW = 60, bH = 34, bX = xName + nameW + 18, bY = rs + 14;
+    rr(bX, bY, bW, bH, 9);
+    if (mv > 0) { ctx.fillStyle = '#0a7a3c'; ctx.fill(); }
+    else if (mv < 0) { ctx.fillStyle = RED; ctx.fill(); }
+    else {
+      ctx.fillStyle = PAPER; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = LINE; ctx.stroke();
+    }
+    ctx.fillStyle = mv === 0 ? MUT : '#ffffff';
+    ctx.font = FONT(800, 24);
+    ctx.textAlign = 'center';
+    ctx.fillText(mv > 0 ? `▲${mv}` : mv < 0 ? `▼${-mv}` : '—', bX + bW / 2, bY + 25);
+    // form strip kecil di bawah nama (W ink · L putih-merah · D paper)
+    ctx.textAlign = 'left';
+    const form = s.form.slice(-5);
+    form.forEach((f, j) => {
+      const x = xName + j * 40, y = rs + 64, sz = 28;
+      if (f === 'W') {
+        rr(x, y, sz, sz, 6); ctx.fillStyle = INK; ctx.fill();
+        ctx.fillStyle = '#ffffff';
+      } else if (f === 'L') {
+        rr(x, y, sz, sz, 6); ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = RED; ctx.stroke();
+        ctx.fillStyle = RED;
+      } else {
+        rr(x, y, sz, sz, 6); ctx.fillStyle = PAPER; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = LINE; ctx.stroke();
+        ctx.fillStyle = MUT;
+      }
+      ctx.textAlign = 'center'; ctx.font = FONT(800, 17);
+      ctx.fillText(f, x + sz / 2, y + sz / 2 + 6);
+    });
+    // angka — satu pusat vertikal per baris
     ctx.textAlign = 'right';
     ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
-    ctx.fillText(`${s.w}-${s.d}-${s.l}`, xRec, by - 8);
+    ctx.fillText(`${s.w}-${s.d}-${s.l}`, xRec, cy + 10);
     ctx.fillStyle = INK;
-    ctx.fillText(String(wr(s)), xWin, by - 8);
+    ctx.fillText(String(Math.round(wr(s))), xWin, cy + 10);
     ctx.font = BEB(64);
-    ctx.fillText(String(Math.round(s.elo)), xElo, by - 2);
+    const eloTxt = String(Math.round(s.elo));
+    const eloW = ctx.measureText(eloTxt).width; // ukur SEBELUM ganti font, else lebar salah
+    ctx.fillText(eloTxt, xElo, cy + 22);
+    const dlt = s.lastDelta;
+    if (dlt) {
+      ctx.fillStyle = dlt > 0 ? '#0a7a3c' : RED;
+      ctx.font = FONT(800, 34);
+      ctx.fillText(`${dlt > 0 ? '+' : ''}${dlt}`, xElo - eloW - 36, cy + 20);
+    }
     if (i < top5.length - 1) {
       ctx.strokeStyle = LINE; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(M, 356 + (i + 1) * RH); ctx.lineTo(W - M, 356 + (i + 1) * RH); ctx.stroke();

@@ -135,6 +135,26 @@ function computeStats(players, matches) {
       s.rank = i + 1;
     });
 
+  // Pergerakan rank vs state sebelum match terakhir: revert ELO dua pemain
+  // di match terakhir (elo - lastDelta), ranking ulang. move > 0 naik, < 0 turun.
+  const last = valid[valid.length - 1] || null;
+  if (valid.length > 1) {
+    const prevElo = new Map(list.map((s) => [s.id, s.elo]));
+    prevElo.set(last.a, byId[last.a].elo - byId[last.a].lastDelta);
+    prevElo.set(last.b, byId[last.b].elo - byId[last.b].lastDelta);
+    [...list]
+      .sort((x, y) => prevElo.get(y.id) - prevElo.get(x.id))
+      .forEach((s, i) => {
+        s.prevRank = i + 1;
+        s.move = i + 1 - s.rank;
+      });
+  } else {
+    list.forEach((s) => {
+      s.prevRank = s.rank;
+      s.move = 0;
+    });
+  }
+
   // Records
   let biggestWin = null;
   let topScoring = null;

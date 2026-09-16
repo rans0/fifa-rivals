@@ -103,6 +103,14 @@ const st5 = computeStats(players, [
 assert.strictEqual(st5.skipped.length, 2, '2 match invalid di-skip');
 assert.strictEqual(st5.byId.x.p, 1, 'hanya 1 match valid terhitung');
 
+// pergerakan rank: st diakhiri y menang → sebelumnya x rank 1, sekarang y rank 1
+assert.strictEqual(st.byId.x.move, -1, 'x turun 1 (move -1)');
+assert.strictEqual(st.byId.y.move, 1, 'y naik 1 (move +1)');
+assert.strictEqual(st.byId.x.prevRank, 1, 'prevRank x = 1');
+// cuma 1 match: belum ada state sebelumnya → semuanya tetap
+assert.strictEqual(st3.byId.x.move, 0, '1 match: move x = 0');
+assert.strictEqual(st3.byId.y.move, 0, '1 match: move y = 0');
+
 // records
 assert.strictEqual(st5.records.biggestWin.a + st5.records.biggestWin.b, 'xy', 'biggestWin tercatat');
 assert.strictEqual(st5.records.bestStreak.len, 1, 'record streak');
