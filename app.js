@@ -655,5 +655,14 @@ async function boot() {
 
   window.addEventListener('hashchange', route);
   route();
+
+  // keep sticky table headers below the sticky topbar (its height varies with font load / width)
+  const syncTopbarH = () => {
+    const h = document.querySelector('.topbar')?.offsetHeight;
+    if (h) document.documentElement.style.setProperty('--topbar-h', h + 'px');
+  };
+  syncTopbarH();
+  addEventListener('resize', syncTopbarH);
+  document.fonts?.ready.then(syncTopbarH);
 }
 boot();

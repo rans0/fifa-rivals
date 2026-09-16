@@ -19,6 +19,7 @@
   --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
   --font-body: 'Barlow Semi Condensed', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --topbar-h: 84px; /* measured at runtime in app.js; fallback for first paint */
 }
 
 * { box-sizing: border-box; }
@@ -155,7 +156,7 @@ code { font: 12px var(--font-mono); color: var(--mut); }
   background: var(--card); color: var(--ink);
   border: 1px solid var(--line); border-radius: 6px;
   padding: 9px 13px;
-  font: 500 14px var(--font-body);
+  font: 500 16px var(--font-body); /* >=16px so iOS Safari doesn't auto-zoom on focus */
   min-width: 175px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -177,7 +178,7 @@ code { font: 12px var(--font-mono); color: var(--mut); }
 .tbl { border-collapse: collapse; width: 100%; font-size: 14.5px; }
 .tbl th, .tbl td { padding: 10px 13px; text-align: left; white-space: nowrap; }
 .tbl thead th {
-  position: sticky; top: 0; z-index: 2;
+  position: sticky; top: var(--topbar-h); z-index: 2;
   background: var(--card);
   font: 700 11px/1 var(--font-body);
   letter-spacing: 0.12em; text-transform: uppercase;
