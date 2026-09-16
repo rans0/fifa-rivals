@@ -1,0 +1,18 @@
+{
+  "_comment": "Tambah match baru: copy 1 baris di 'matches', isi date (YYYY-MM-DD), id pemain, club, skor. Pemain baru: tambah di 'players'. Setelah edit: commit, lalu di VPS 'git pull'. Nama club harus konsisten persis (contoh selalu 'PSG', bukan kadang 'Paris') biar aggregate benar.",
+  "players": [
+    { "id": "aran", "name": "Aran" },
+    { "id": "tammam", "name": "Tammam" },
+    { "id": "unedo", "name": "Unedo" },
+    { "id": "amirul", "name": "Amirul" },
+    { "id": "morte", "name": "Morte" }
+  ],
+  "matches": [
+    { "date": "2026-09-14", "a": "aran", "aClub": "Arsenal", "aScore": 1, "b": "tammam", "bClub": "Real Madrid", "bScore": 4 },
+    { "date": "2026-09-14", "a": "unedo", "aClub": "Manchester United", "aScore": 1, "b": "tammam", "bClub": "Real Madrid", "bScore": 5 },
+    { "date": "2026-09-15", "a": "aran", "aClub": "Inter Milan", "aScore": 2, "b": "tammam", "bClub": "Real Madrid", "bScore": 0 },
+    { "date": "2026-09-15", "a": "aran", "aClub": "Inter Milan", "aScore": 4, "b": "amirul", "bClub": "Arsenal", "bScore": 0 },
+    { "date": "2026-09-15", "a": "aran", "aClub": "Inter Milan", "aScore": 8, "b": "morte", "bClub": "PSG", "bScore": 6 },
+    { "date": "2026-09-15", "a": "aran", "aClub": "Inter Milan", "aScore": 6, "b": "morte", "bClub": "PSG", "bScore": 5 }
+  ]
+}

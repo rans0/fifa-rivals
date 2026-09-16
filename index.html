@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FIFA Rivals</title>
+  <meta name="description" content="Leaderboard, stats & head-to-head for our FIFA friend league.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Semi+Condensed:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="#/leaderboard">⚽ FIFA <span>RIVALS</span></a>
+      <nav class="tabs" id="tabs">
+        <a href="#/leaderboard" data-tab="leaderboard">Leaderboard</a>
+        <a href="#/h2h" data-tab="h2h">Head-to-Head</a>
+        <a href="#/clubs" data-tab="clubs">Club</a>
+        <a href="#/matches" data-tab="matches">Matches</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap" id="main">
+    <div id="data-warn" class="warn" hidden></div>
+    <section id="banner" class="banner"></section>
+    <section id="records"></section>
+
+    <section id="view-leaderboard" class="view" hidden>
+      <div class="view-head">
+        <h2>Leaderboard</h2>
+        <input id="lb-search" type="search" placeholder="Search player…" autocomplete="off">
+      </div>
+      <div class="tbl-wrap"><table class="tbl" id="lb-table">
+        <thead><tr>
+          <th data-key="rank">#</th>
+          <th data-key="name">Player</th>
+          <th data-key="elo" class="num">ELO</th>
+          <th data-key="p" class="num">MP</th>
+          <th data-key="w" class="num">W</th>
+          <th data-key="d" class="num opt">D</th>
+          <th data-key="l" class="num">L</th>
+          <th data-key="gf" class="num opt">GF</th>
+          <th data-key="ga" class="num opt">GA</th>
+          <th data-key="diff" class="num">+/-</th>
+          <th data-key="winrate" class="num">Win %</th>
+          <th data-key="bestStreak" class="num">Win Streak</th>
+        </tr></thead>
+        <tbody id="lb-body"></tbody>
+      </table></div>
+    </section>
+
+    <section id="view-h2h" class="view" hidden>
+      <div class="view-head"><h2>Head-to-Head</h2></div>
+      <p class="hint">Tap a cell for the duel breakdown. Cell format: <b>row wins</b> · draws · column wins.</p>
+      <div class="tbl-wrap"><table class="tbl matrix" id="h2h-table"></table></div>
+      <div id="pair-detail"></div>
+    </section>
+
+    <section id="view-clubs" class="view" hidden>
+      <div class="view-head">
+        <h2>Club</h2>
+        <select id="club-filter"></select>
+      </div>
+      <div class="tbl-wrap"><table class="tbl" id="club-table">
+        <thead><tr>
+          <th>Club</th><th data-key="p" class="num">MP</th><th data-key="w" class="num">W</th>
+          <th data-key="d" class="num">D</th><th data-key="l" class="num">L</th>
+          <th data-key="gf" class="num">GF</th><th data-key="ga" class="num">GA</th>
+          <th data-key="winrate" class="num">Win %</th>
+        </tr></thead>
+        <tbody id="club-body"></tbody>
+      </table></div>
+    </section>
+
+    <section id="view-matches" class="view" hidden>
+      <div class="view-head">
+        <h2>Match History</h2>
+        <select id="match-filter"></select>
+      </div>
+      <div id="match-list"></div>
+    </section>
+
+    <section id="view-player" class="view" hidden></section>
+  </div>
+
+  <footer class="foot"><div class="wrap foot-in">
+    <span class="fb">FIFA RIVALS</span>
+    <span class="fm">fifa-rivals.projectlabs.id</span>
+  </div></footer>
+
+  <script src="stats.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+'use strict';
+// Jalankan: node stats.test.js
+const assert = require('assert');
+const {
+  ELO_BASE,
+  ELO_K,
+  expectedScore,
+  sortMatches,
+  computeStats,
+  h2hRowsFor,
+  favoriteClub,
+  winrate,
+} = require('./stats.js');
+
+// expectedScore
+assert.ok(Math.abs(expectedScore(1200, 1200) - 0.5) < 1e-9, 'elo sama = 0.5');
+assert.ok(expectedScore(1400, 1200) > 0.75, 'rating lebih tinggi difavoritkan');
+
+// sortMatches: tanggal asc, urutan input stabil utk tanggal sama
+const sorted = sortMatches([
+  { date: '2026-01-02', tag: 'b' },
+  { date: '2026-01-01', tag: 'a' },
+  { date: '2026-01-02', tag: 'c' },
+]);
+assert.deepStrictEqual(sorted.map((m) => m.tag), ['a', 'b', 'c'], 'sort tanggal + stabil');
+
+// computeStats dasar
+const players = [
+  { id: 'x', name: 'X' },
+  { id: 'y', name: 'Y' },
+];
+const st = computeStats(players, [
+  { date: '2026-01-01', a: 'x', aClub: 'A', aScore: 2, b: 'y', bClub: 'B', bScore: 1 }, // x menang
+  { date: '2026-01-02', a: 'x', aClub: 'A', aScore: 0, b: 'y', bClub: 'B', bScore: 0 }, // draw
+  { date: '2026-01-03', a: 'y', aClub: 'B', aScore: 3, b: 'x', bClub: 'A', bScore: 1 }, // y menang
+]);
+
+const X = st.byId.x;
+const Y = st.byId.y;
+assert.strictEqual(X.p, 3, 'x main 3');
+assert.strictEqual(X.w, 1, 'x menang 1');
+assert.strictEqual(X.d, 1, 'x draw 1');
+assert.strictEqual(X.l, 1, 'x kalah 1');
+assert.strictEqual(X.gf, 3, 'gf x = 3');
+assert.strictEqual(X.ga, 4, 'ga x = 4');
+assert.strictEqual(winrate(X), 33.3, 'winrate x');
+assert.strictEqual(X.elo + Y.elo, 2 * ELO_BASE, 'elo konservatif: jumlah tetap');
+assert.strictEqual(X.lastDelta, -(Y.lastDelta), 'delta terakhir simetris');
+
+// streak: x = W, D, L -> bestStreak 1
+assert.strictEqual(X.bestStreak, 1, 'best streak x = 1');
+// streak: y = L, D, W -> bestStreak 1
+assert.strictEqual(Y.bestStreak, 1, 'best streak y = 1');
+assert.strictEqual(X.form.join(''), 'WDL', 'form x');
+
+// winstreak beruntun
+const st2 = computeStats(players, [
+  { date: '2026-01-01', a: 'x', aClub: 'A', aScore: 1, b: 'y', bClub: 'B', bScore: 0 },
+  { date: '2026-01-02', a: 'x', aClub: 'A', aScore: 2, b: 'y', bClub: 'B', bScore: 1 },
+  { date: '2026-01-03', a: 'x', aClub: 'A', aScore: 3, b: 'y', bClub: 'B', bScore: 0 },
+  { date: '2026-01-04', a: 'x', aClub: 'A', aScore: 0, b: 'y', bClub: 'B', bScore: 1 },
+  { date: '2026-01-05', a: 'x', aClub: 'A', aScore: 1, b: 'y', bClub: 'B', bScore: 0 },
+]);
+assert.strictEqual(st2.byId.x.bestStreak, 3, 'winstreak x = 3');
+assert.strictEqual(st2.byId.x.curStreak.type, 'W', 'streak skrg W');
+assert.strictEqual(st2.byId.x.curStreak.len, 1, 'streak skrg reset ke 1');
+assert.strictEqual(st2.byId.x.rank, 1, 'x rank 1');
+assert.strictEqual(st2.byId.y.rank, 2, 'y rank 2');
+
+// ELO pemenang rating bawah naik lebih banyak
+const st3 = computeStats(players, [
+  { date: '2026-01-01', a: 'x', aClub: 'A', aScore: 1, b: 'y', bClub: 'B', bScore: 0 },
+]);
+const st4 = computeStats(players, [
+  { date: '2026-01-01', a: 'y', aClub: 'B', aScore: 0, b: 'x', aClub: 'A', bScore: 1 },
+]);
+// di st3 & st4 pemenang sama-sama x, cuma beda sisi home/away
+assert.strictEqual(st3.byId.x.elo, st4.byId.x.elo, 'elo simetris: menang dr sisi mana pun sama');
+assert.strictEqual(st3.byId.x.elo, ELO_BASE + Math.round(ELO_K * (1 - 0.5)), 'elo awal menang = +16');
+
+// h2h
+const rows = h2hRowsFor(st, 'x');
+assert.strictEqual(rows.length, 1, 'x punya 1 lawan');
+assert.strictEqual(rows[0].oppId, 'y', 'lawan y');
+assert.strictEqual(rows[0].w, 1, 'h2h x menang 1');
+assert.strictEqual(rows[0].d, 1, 'h2h x draw 1');
+assert.strictEqual(rows[0].l, 1, 'h2h x kalah 1');
+assert.strictEqual(rows[0].gf + rows[0].ga, 7, 'total gol h2h');
+
+// club
+const fav = favoriteClub(st.byId.x);
+assert.strictEqual(fav.club, 'A', 'club andalan x');
+assert.strictEqual(fav.p, 3, 'club A dipakai 3x');
+const globalA = st.clubs.A;
+assert.strictEqual(globalA.p, 3, 'club global A 3 match');
+
+// match invalid di-skip, bukan crash
+const st5 = computeStats(players, [
+  { date: '2026-01-01', a: 'x', aClub: 'A', aScore: 1, b: 'y', bClub: 'B', bScore: 0 },
+  { date: '2026-01-02', a: 'x', aClub: 'A', aScore: 1, b: 'tidakada', bClub: 'B', bScore: 0 },
+  { date: '2026-01-03', a: 'x', aClub: 'A', b: 'y', bClub: 'B', bScore: 0 }, // skor hilang
+]);
+assert.strictEqual(st5.skipped.length, 2, '2 match invalid di-skip');
+assert.strictEqual(st5.byId.x.p, 1, 'hanya 1 match valid terhitung');
+
+// records
+assert.strictEqual(st5.records.biggestWin.a + st5.records.biggestWin.b, 'xy', 'biggestWin tercatat');
+assert.strictEqual(st5.records.bestStreak.len, 1, 'record streak');
+assert.strictEqual(st5.lastMatch.date, '2026-01-01', 'lastMatch = match valid terakhir');
+
+console.log('✓ semua test lolos');
