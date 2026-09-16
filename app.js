@@ -111,21 +111,18 @@ function sparkSVG(hist, w, h, stroke, fill) {
 /* ---------- render: banner + records ---------- */
 
 function renderBanner() {
-  const m = S.lastMatch;
   const el = $('#banner');
-  if (!m) {
+  if (!S.lastMatch) {
     el.innerHTML = `<div class="tag">NEW LEAGUE</div><div class="champ">No matches yet 🏁</div>`;
     return;
   }
-  const draw = m.aScore === m.bScore;
-  const champ = draw ? null : m.aScore > m.bScore ? S.byId[m.a] : S.byId[m.b];
-  el.innerHTML = draw
-    ? `<div class="tag">LAST RESULT</div>
-       <div class="champ">Draw — crown up for grabs 🔒</div>
-       <div class="score">${esc(S.byId[m.a].name)} ${chip(m.aClub)} <b>${m.aScore}–${m.bScore}</b> ${chip(m.bClub)} ${esc(S.byId[m.b].name)}</div>`
-    : `<div class="tag">🏆 REIGNING CHAMPION</div>
-       <div class="champ">${esc(champ.name)}</div>
-       <div class="score">beat ${esc(champ === S.byId[m.a] ? S.byId[m.b].name : S.byId[m.a].name)} — <b>${m.aScore}–${m.bScore}</b> (${fmtDate(m.date)})</div>`;
+  // pemuncak klasemen (rank 1 by ELO)
+  const champ = S.list[0];
+  const second = S.list[1];
+  const lead = second ? Math.round(champ.elo - second.elo) : 0;
+  el.innerHTML = `<div class="tag">🏆 LEAGUE LEADER</div>
+     <div class="champ">${esc(champ.name)}</div>
+     <div class="score">${champ.w}W ${champ.d}D ${champ.l}L — <b>${Math.round(champ.elo)} ELO</b>${second ? ` • ${lead > 0 ? `+${lead} vs` : 'level with'} ${esc(second.name)}` : ''}</div>`;
 }
 
 function renderRecords() {
@@ -145,6 +142,12 @@ function renderRecords() {
   }
   if (r.mostPlayedPair)
     cards.push(['Most-Played Rivalry', `${r.mostPlayedPair.count} meetings`, `${nm(r.mostPlayedPair.ids[0])} vs ${nm(r.mostPlayedPair.ids[1])}`]);
+  if (r.worstStreak)
+    cards.push(['Longest Losing Streak', `🥶 ${r.worstStreak.len} matches`, nm(r.worstStreak.id)]);
+  if (r.tightH2h) {
+    const t = r.tightH2h;
+    cards.push(['Tightest Rivalry', `${t.wX}–${t.d}–${t.wY}`, `${nm(t.ids[0])} vs ${nm(t.ids[1])} · ${t.count} meetings`]);
+  }
   $('#records').innerHTML = cards
     .map(([k, v, s]) => `<div class="rec"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`)
     .join('');

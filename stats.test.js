@@ -116,4 +116,18 @@ assert.strictEqual(st5.records.biggestWin.a + st5.records.biggestWin.b, 'xy', 'b
 assert.strictEqual(st5.records.bestStreak.len, 1, 'record streak');
 assert.strictEqual(st5.lastMatch.date, '2026-01-01', 'lastMatch = match valid terakhir');
 
+// worstStreak: y kalah 3x beruntun di st2? (y: L L L W L -> worst 3)
+assert.strictEqual(st2.byId.y.worstStreak, 3, 'losing streak y = 3');
+assert.strictEqual(st2.records.worstStreak.id, 'y', 'record losing streak y');
+// st: x WDL -> worst 1, y LDW -> worst 1
+assert.strictEqual(st.byId.x.worstStreak, 1, 'losing streak x = 1');
+
+// tightH2h: st x-y = 1W 1D 1L (margin 0, 3 meetings) -> terketat
+assert.strictEqual(st.records.tightH2h.ids.join('|'), 'x|y', 'tightest rivalry x vs y');
+assert.strictEqual(st.records.tightH2h.margin, 0, 'margin h2h st = 0');
+// st2 x-y = 4W 0D 1L (margin 3) -> margin 3
+assert.strictEqual(st2.records.tightH2h.margin, 3, 'margin h2h st2 = 3');
+// 1 match saja tidak lolos syarat >= 2 meeting
+assert.strictEqual(st3.records.tightH2h, null, '1 meeting: tidak ada tightH2h');
+
 console.log('✓ semua test lolos');

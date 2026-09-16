@@ -31,6 +31,7 @@ function newPlayerStat(p) {
     form: [], // 'W' | 'D' | 'L'
     curStreak: { type: null, len: 0 },
     bestStreak: 0, // winstreak terpanjang
+    worstStreak: 0, // losing streak terpanjang
     clubs: {}, // nama club -> {club,p,w,d,l,gf,ga}
   };
 }
@@ -46,6 +47,7 @@ function applyResult(st, r, gf, ga) {
   if (st.curStreak.type === r) st.curStreak.len++;
   else st.curStreak = { type: r, len: 1 };
   if (r === 'W' && st.curStreak.len > st.bestStreak) st.bestStreak = st.curStreak.len;
+  if (r === 'L' && st.curStreak.len > st.worstStreak) st.worstStreak = st.curStreak.len;
 }
 
 function bumpClub(store, club, gf, ga) {
@@ -173,6 +175,21 @@ function computeStats(players, matches) {
     if (s.bestStreak > 0 && (!bestStreak || s.bestStreak > bestStreak.len))
       bestStreak = { id: s.id, name: s.name, len: s.bestStreak };
   }
+  let worstStreak = null;
+  for (const s of list) {
+    if (s.worstStreak > 0 && (!worstStreak || s.worstStreak > worstStreak.len))
+      worstStreak = { id: s.id, name: s.name, len: s.worstStreak };
+  }
+  // Rival terketat: h2h paling seimbang (min 2 match), selisih menang terkecil;
+  // seri margin -> lebih banyak meeting menang.
+  let tightH2h = null;
+  for (const h of Object.values(h2h)) {
+    if (h.matches.length < 2) continue;
+    const margin = Math.abs(h.wX - h.wY);
+    if (!tightH2h || margin < tightH2h.margin ||
+        (margin === tightH2h.margin && h.matches.length > tightH2h.count))
+      tightH2h = { ids: h.ids, margin, count: h.matches.length, wX: h.wX, d: h.d, wY: h.wY };
+  }
 
   const lastMatch = valid[valid.length - 1] || null;
 
@@ -181,7 +198,7 @@ function computeStats(players, matches) {
     list: [...list].sort((x, y) => x.rank - y.rank),
     h2h,
     clubs,
-    records: { biggestWin, topScoring, mostPlayedPair, bestStreak },
+    records: { biggestWin, topScoring, mostPlayedPair, bestStreak, worstStreak, tightH2h },
     lastMatch,
     skipped,
   };
