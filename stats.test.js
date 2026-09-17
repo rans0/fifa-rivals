@@ -162,4 +162,8 @@ assert.deepStrictEqual(st3.daily.map((d) => d.id), ['x'], 'daily 1 hari = x');
 // st5: tanggal dgn match invalid tetap pakai match valid saja
 assert.deepStrictEqual(st5.daily.map((d) => d.date), ['2026-01-01'], 'daily skip match invalid');
 
+// eloDelta per match: gain ELO sisi a (positif = a untung)
+assert.strictEqual(st3.lastMatch.eloDelta, 16, 'eloDelta match pertama = +16 utk pemenang');
+assert.strictEqual(st.lastMatch.eloDelta, 17, 'eloDelta match terakhir st: a (y) menang +17');
+
 console.log('✓ semua test lolos');

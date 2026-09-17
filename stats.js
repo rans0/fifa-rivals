@@ -117,6 +117,7 @@ function computeStats(players, matches) {
     // ELO
     const ea = expectedScore(A.elo, B.elo);
     const dA = Math.round(ELO_K * ((draw ? 0.5 : aWin ? 1 : 0) - ea));
+    m.eloDelta = dA; // gain ELO sisi a (dipakai chip pergerakan di match list)
     A.elo += dA;
     B.elo -= dA;
     A.lastDelta = dA;

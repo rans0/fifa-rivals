@@ -321,24 +321,70 @@ function renderClubs() {
 
 /* ---------- render: matches ---------- */
 
+// Top performer satu hari: menang terbanyak, seri → gol terbanyak
+function dayTopPerformer(list) {
+  const agg = {};
+  for (const m of list) {
+    for (const side of ['a', 'b']) {
+      const gf = m[side + 'Score'];
+      const ga = m[(side === 'a' ? 'b' : 'a') + 'Score'];
+      const s = (agg[m[side]] = agg[m[side]] || { w: 0, gf: 0 });
+      s.gf += gf;
+      if (gf > ga) s.w++;
+    }
+  }
+  let top = null;
+  for (const [id, s] of Object.entries(agg)) {
+    if (!top || s.w > top.s.w || (s.w === top.s.w && s.gf > top.s.gf)) top = { id, s };
+  }
+  return top;
+}
+
+// Baris satu match + chip ELO pemenang & highlight big win (margin ≥ 4)
+function matchRow(m) {
+  const aWin = m.aScore > m.bScore;
+  const draw = m.aScore === m.bScore;
+  const big = Math.abs(m.aScore - m.bScore) >= 4;
+  const eloChip = (winner) => {
+    if (draw || m.eloDelta == null) return '';
+    const gain = winner === 'a' ? m.eloDelta : -m.eloDelta;
+    return gain > 0 ? `<span class="elo-chip">+${gain}</span>` : '';
+  };
+  return `<div class="match${big ? ' big' : ''}">
+    <span class="date">${fmtDate(m.date)}<span class="sub">${m.aScore + m.bScore} goals</span></span>
+    <span class="pl">${chip(m.aClub)}<span class="cn ${aWin ? 'win' : ''}">${esc(S.byId[m.a].name)}${aWin ? ' 🏆' : draw ? ' 🤝' : ''}${eloChip('a')}</span></span>
+    <span class="sc">${m.aScore}–${m.bScore}</span>
+    <span class="pl r"><span class="cn ${!aWin && !draw ? 'win' : ''}">${esc(S.byId[m.b].name)}${!aWin && !draw ? ' 🏆' : draw ? ' 🤝' : ''}${eloChip('b')}</span>${chip(m.bClub)}</span>
+  </div>`;
+}
+
 function renderMatches() {
   const f = $('#match-filter').value;
   const all = S.list.length ? [...DATA.matches] : [];
-  const ms = [...all]
-    .filter((m) => (!f || m.a === f || m.b === f) && S.byId[m.a] && S.byId[m.b])
-    .sort((x, y) => (x.date === y.date ? 0 : x.date < y.date ? 1 : -1)); // terbaru dulu
-  $('#match-list').innerHTML = ms
-    .map((m) => {
-      const aWin = m.aScore > m.bScore;
-      const draw = m.aScore === m.bScore;
-      return `<div class="match">
-        <span class="date">${fmtDate(m.date)}<span class="sub">${m.aScore + m.bScore} goals</span></span>
-        <span class="pl">${chip(m.aClub)}<span class="cn ${aWin ? 'win' : ''}">${esc(S.byId[m.a].name)}${aWin ? ' 🏆' : draw ? ' 🤝' : ''}</span></span>
-        <span class="sc">${m.aScore}–${m.bScore}</span>
-        <span class="pl r"><span class="cn ${!aWin && !draw ? 'win' : ''}">${esc(S.byId[m.b].name)}${!aWin && !draw ? ' 🏆' : draw ? ' 🤝' : ''}</span>${chip(m.bClub)}</span>
-      </div>`;
-    })
-    .join('');
+  const ms = all.filter((m) => (!f || m.a === f || m.b === f) && S.byId[m.a] && S.byId[m.b]);
+  const days = new Map(); // date → matches (urut input)
+  for (const m of ms) {
+    if (!days.has(m.date)) days.set(m.date, []);
+    days.get(m.date).push(m);
+  }
+  const leaderByDate = new Map(S.daily.map((d) => [d.date, d]));
+  const dayNo = new Map(S.daily.map((d, i) => [d.date, i + 1])); // oldest = 1
+  let html = '';
+  for (const date of [...days.keys()].sort().reverse()) {
+    const list = days.get(date);
+    const top = dayTopPerformer(list);
+    const lead = leaderByDate.get(date);
+    html += `<div class="day-head">
+      <div class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small>${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></div>
+      <div class="dh-stats">
+        <span>⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)} goals</span>
+        ${top ? `<span>🔥 ${esc(S.byId[top.id].name)} ${top.s.w}W</span>` : ''}
+        ${lead ? `<span>👑 ${esc(S.byId[lead.id].name)} ${Math.round(lead.elo)}</span>` : ''}
+      </div>
+    </div>`;
+    html += list.map(matchRow).join('');
+  }
+  $('#match-list').innerHTML = html;
 }
 
 /* ---------- render: player page ---------- */
