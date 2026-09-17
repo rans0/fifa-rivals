@@ -258,13 +258,18 @@ function renderLeaderboard() {
 
 /* ---------- render: h2h ---------- */
 
+// Sel matriks dari sudut pandang row: W–D–L. null = belum pernah main.
+// Tint merah = rivalry heat: alpha naik seiring dominasi (|W−L| / match).
 function h2hCell(aId, bId) {
   const h = S.h2h[[aId, bId].sort().join('|')];
-  if (!h) return '<span class="zero">–</span>';
+  if (!h) return null;
   const isX = h.ids[0] === aId;
   const w = isX ? h.wX : h.wY;
   const l = isX ? h.wY : h.wX;
-  return `<span class="${w > l ? 'dom' : w < l ? 'neg' : ''}">${w}</span>–${h.d}–<span class="${l > w ? 'dom' : ''}">${l}</span>`;
+  const heat = (0.05 + 0.2 * (Math.abs(w - l) / h.matches.length)).toFixed(3);
+  const wCls = w > l ? 'dom' : w < l ? 'sub' : '';
+  const lCls = l > w ? 'dom' : l < w ? 'sub' : '';
+  return `<td class="cell" data-a="${esc(aId)}" data-b="${esc(bId)}" style="background:rgba(225,29,46,${heat})"><span class="${wCls}">${w}</span>–${h.d}–<span class="${lCls}">${l}</span></td>`;
 }
 
 function renderH2H() {
@@ -274,7 +279,8 @@ function renderH2H() {
   for (const r of list) {
     html += `<tr><th class="rowname">${esc(r.name)}</th>`;
     for (const c of list) {
-      html += r.id === c.id ? '<td class="self">·</td>' : `<td class="cell" data-a="${esc(r.id)}" data-b="${esc(c.id)}">${h2hCell(r.id, c.id)}</td>`;
+      if (r.id === c.id) { html += '<td class="self">·</td>'; continue; }
+      html += h2hCell(r.id, c.id) || '<td class="empty">–</td>';
     }
     html += '</tr>';
   }
@@ -289,9 +295,34 @@ function showPair(x, y) {
   const box = $('#pair-detail');
   if (!h) { box.innerHTML = ''; return; }
   const [X, Y] = h.ids.map((id) => S.byId[id]);
-  const matches = [...h.matches].reverse(); // terbaru dulu
   const aggPct = (n, d) => (d ? Math.round((n / d) * 100) : 0);
   const total = h.matches.length;
+  // group per match day (h.matches sudah urut tanggal naik), terbaru dulu
+  const dayNo = new Map(S.daily.map((d, i) => [d.date, i + 1]));
+  const byDate = new Map();
+  for (const m of h.matches) {
+    if (!byDate.has(m.date)) byDate.set(m.date, []);
+    byDate.get(m.date).push(m);
+  }
+  const matchHtml = [...byDate.entries()].reverse().map(([date, list]) =>
+    `<div class="day-head">
+      <span class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small> · ${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></span>
+      <span class="dh-stats">⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)}</span>
+    </div>` +
+    list.slice().reverse().map((m) => { // terbaru dulu dalam satu hari
+      const isAfirst = m.a === h.ids[0];
+      const sX = isAfirst ? m.aScore : m.bScore;
+      const sY = isAfirst ? m.bScore : m.aScore;
+      const clubX = isAfirst ? m.aClub : m.bClub;
+      const clubY = isAfirst ? m.bClub : m.aClub;
+      return `<div class="match">
+        <span class="date">${fmtDate(m.date)}</span>
+        <span class="pl">${chip(clubX)}<span class="cn ${sX > sY ? 'win' : ''}">${esc(X.name)}${sX > sY ? ' 🏆' : ''}</span></span>
+        <span class="sc">${sX}–${sY}</span>
+        <span class="pl r"><span class="cn ${sY > sX ? 'win' : ''}">${esc(Y.name)}${sY > sX ? ' 🏆' : ''}</span>${chip(clubY)}</span>
+      </div>`;
+    }).join('')
+  ).join('');
   box.innerHTML = `
     <div class="pair" id="pair-anchor">
       <div class="pair-h">
@@ -302,21 +333,7 @@ function showPair(x, y) {
         <div><b>${h.d}</b><span>draws</span></div>
         <div><b class="neg">${h.wY}</b><span>${Y.name} wins</span></div>
       </div>
-      ${matches
-        .map((m) => {
-          const isAfirst = m.a === h.ids[0];
-          const sX = isAfirst ? m.aScore : m.bScore;
-          const sY = isAfirst ? m.bScore : m.aScore;
-          const clubX = isAfirst ? m.aClub : m.bClub;
-          const clubY = isAfirst ? m.bClub : m.aClub;
-          return `<div class="match">
-            <span class="date">${fmtDate(m.date)}</span>
-            <span class="pl">${chip(clubX)}<span class="cn ${sX > sY ? 'win' : ''}">${esc(X.name)}${sX > sY ? ' 🏆' : ''}</span></span>
-            <span class="sc">${sX}–${sY}</span>
-            <span class="pl r"><span class="cn ${sY > sX ? 'win' : ''}">${esc(Y.name)}${sY > sX ? ' 🏆' : ''}</span>${chip(clubY)}</span>
-          </div>`;
-        })
-        .join('')}
+      ${matchHtml}
       <p class="hint">Dominance: ${aggPct(h.wX, total)}% ${esc(X.name)} · ${aggPct(h.wY, total)}% ${esc(Y.name)} · aggregate goals ${h.gX}–${h.gY}</p>
     </div>`;
   box.scrollIntoView({ behavior: 'smooth', block: 'start' });
