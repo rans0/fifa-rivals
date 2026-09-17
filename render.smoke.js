@@ -34,9 +34,10 @@ vm.runInContext(fs.readFileSync('app.js', 'utf8'), ctx, { filename: 'app.js' });
 
 setTimeout(() => {
   const html = store['#match-list'].innerHTML;
-  const days = new Set(JSON.parse(fs.readFileSync('data.json')).matches.map((m) => m.date));
+  const matches = JSON.parse(fs.readFileSync('data.json')).matches;
+  const days = new Set(matches.map((m) => m.date));
   assert.ok((html.match(/MATCH DAY/g) || []).length === days.size, 'semua match day ke-render');
-  assert.ok((html.match(/class="match/g) || []).length === 21, 'semua baris match ke-render');
+  assert.ok((html.match(/class="match/g) || []).length === matches.length, 'semua baris match ke-render');
   assert.ok((store['#crown'].innerHTML.match(/class="reign/g) || []).length >= 1, 'crown history ke-render');
   assert.ok(store['#records'].innerHTML.includes('rec'), 'records ke-render');
   assert.ok(store['#banner'].innerHTML.includes('champ'), 'banner ke-render');
