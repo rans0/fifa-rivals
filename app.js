@@ -82,7 +82,8 @@ function chip(name) {
 
 /* ---------- sparkline ---------- */
 
-function sparkSVG(hist, w, h, stroke, fill) {
+// titles[i] = tooltip per titik (nilai ELO + konteks match); null = tanpa tooltip
+function sparkSVG(hist, w, h, stroke, fill, titles) {
   if (!hist || hist.length < 2) return '';
   const min = Math.min(...hist);
   const max = Math.max(...hist);
@@ -98,7 +99,15 @@ function sparkSVG(hist, w, h, stroke, fill) {
   const dots = pts
     .map((p, i) => {
       const end = i === last;
-      return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${end ? 4.5 : 3}" fill="${end ? stroke : '#fff'}" stroke="${stroke}" stroke-width="2"/>`;
+      // label hover: seg[0] = nilai, sisanya konteks — dipisah " · "
+      let tip = '';
+      if (titles && titles[i]) {
+        const seg = String(titles[i]).split(' · ');
+        const tx = Math.max(46, Math.min(w - 46, p[0]));
+        const ty = p[1] < 34 ? p[1] + 30 : p[1] - 16; // dekat tepi atas → label di bawah titik
+        tip = `<g class="tip"><text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" class="tv">${esc(seg[0])}</text><text x="${tx.toFixed(1)}" y="${(ty + 12).toFixed(1)}" class="ts">${esc(seg.slice(1).join(' · '))}</text></g>`;
+      }
+      return `<g class="pt"><circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="11" fill="transparent"/><circle class="dot" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${end ? 4.5 : 3}" fill="${end ? stroke : '#fff'}" stroke="${stroke}" stroke-width="2"/>${tip}</g>`;
     })
     .join('');
   return `<svg class="spark" viewBox="0 0 ${w} ${h}">
@@ -440,6 +449,16 @@ function renderPlayer(id) {
     .filter((m) => (m.a === id || m.b === id) && S.byId[m.a] && S.byId[m.b])
     .sort((x, y) => (x.date === y.date ? 0 : x.date < y.date ? 1 : -1));
   const d = s.lastDelta;
+  // tooltip sparkline: eloHist[i] ↔ match ke-i pemain (hist[0] = start 1200)
+  const asc = myMatches.slice().reverse();
+  const sparkTitles = s.eloHist.map((v, i) => {
+    const m = asc[i - 1];
+    if (!m) return i === 0 ? `${v} ELO · start` : `${v} ELO`;
+    const slotA = m.a === id;
+    const my = slotA ? m.aScore : m.bScore, op = slotA ? m.bScore : m.aScore;
+    const res = my > op ? 'W' : my < op ? 'L' : 'D';
+    return `${v} ELO · ${res} ${my}–${op} vs ${S.byId[slotA ? m.b : m.a].name} · ${fmtDate(m.date)}`;
+  });
 
   $('#view-player').innerHTML = `
     <a class="back" href="#/leaderboard">← back to leaderboard</a>
@@ -454,7 +473,7 @@ function renderPlayer(id) {
         </div>
         <div class="pl-badge${s.rank === 1 ? ' r1' : ''}"><span>#${s.rank}</span></div>
       </div>
-      ${sparkSVG(s.eloHist, 560, 96, '#e11d2e', 'rgba(225,29,46,.10)')}
+      ${sparkSVG(s.eloHist, 560, 96, '#e11d2e', 'rgba(225,29,46,.10)', sparkTitles)}
       <div class="pl-grid">
         <div class="box"><div class="k">Matches</div><div class="v">${s.p}</div></div>
         <div class="box"><div class="k">Win rate</div><div class="v">${wr(s)}%</div></div>
