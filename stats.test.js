@@ -10,6 +10,7 @@ const {
   h2hRowsFor,
   favoriteClub,
   winrate,
+  computeSash,
 } = require('./stats.js');
 
 // expectedScore
@@ -165,5 +166,25 @@ assert.deepStrictEqual(st5.daily.map((d) => d.date), ['2026-01-01'], 'daily skip
 // eloDelta per match: gain ELO sisi a (positif = a untung)
 assert.strictEqual(st3.lastMatch.eloDelta, 16, 'eloDelta match pertama = +16 utk pemenang');
 assert.strictEqual(st.lastMatch.eloDelta, 17, 'eloDelta match terakhir st: a (y) menang +17');
+
+// computeSash: sabuk king-of-the-hill, bukan ELO
+// x menang perdana → pertahankan vs draw → y rebut → y pertahankan
+const sash = computeSash([
+  { date: '2026-01-01', a: 'x', aScore: 2, b: 'y', bScore: 1 }, // x juara perdana
+  { date: '2026-01-02', a: 'x', aScore: 0, b: 'y', bScore: 0 }, // seri → x retain (defense)
+  { date: '2026-01-03', a: 'z', aScore: 3, b: 'w', bScore: 1 }, // tanpa juara → tak berubah
+  { date: '2026-01-04', a: 'y', aScore: 3, b: 'x', bScore: 1 }, // y rebut sabuk
+  { date: '2026-01-05', a: 'y', aScore: 2, b: 'z', bScore: 0 }, // y pertahankan
+]);
+assert.strictEqual(sash.length, 2, 'dua era sabuk');
+assert.deepStrictEqual(sash.map((r) => r.id), ['x', 'y'], 'x lalu y');
+assert.strictEqual(sash[0].defenses, 1, 'x 1 defense (seri retain)');
+assert.strictEqual(sash[0].from, null, 'x juara perdana');
+assert.strictEqual(sash[0].lost, '2026-01-04', 'x lepas sabuk 01-04');
+assert.strictEqual(sash[1].from, 'x', 'y rebut dari x');
+assert.strictEqual(sash[1].defenses, 1, 'y 1 defense');
+assert.strictEqual(sash[1].current, true, 'y juara saat ini');
+// juara tak main → sabuk diam (match z-w tidak bikin era baru)
+assert.strictEqual(computeSash([]).length, 0, 'no match no sash');
 
 console.log('✓ semua test lolos');

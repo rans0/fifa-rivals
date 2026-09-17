@@ -209,9 +209,44 @@ function computeStats(players, matches) {
     clubs,
     records: { biggestWin, topScoring, mostPlayedPair, bestStreak, worstStreak, tightH2h },
     daily,
+    sash: computeSash(valid),
     lastMatch,
     skipped,
   };
+}
+
+// Slempang Kemenangan — gelar "sabuk" king-of-the-hill (BUKAN berbasis ELO).
+// Pemenang match pertama jadi juara perdana. Tiap match berikutnya adalah
+// pertahanan gelar HANYA jika sang juara ikut main: juara mempertahankan saat
+// menang/seri, dan lepas sabuk ke penantang saat kalah. Match tanpa juara
+// tidak mengubah kepemilikan. `matches` harus sudah valid & terurut.
+function computeSash(matches) {
+  const reigns = []; // {id, from, gained, lost, defenses, current}
+  let champ = null;
+  let cur = null;
+  for (const m of matches) {
+    const draw = m.aScore === m.bScore;
+    const winner = draw ? null : m.aScore > m.bScore ? m.a : m.b;
+    const loser = draw ? null : m.aScore > m.bScore ? m.b : m.a;
+    if (champ === null) {
+      if (draw) continue; // sabuk mulai dari match menang pertama
+      champ = winner;
+      cur = { id: champ, from: null, gained: m.date, lost: null, defenses: 0, current: true };
+      reigns.push(cur);
+      continue;
+    }
+    if (m.a !== champ && m.b !== champ) continue; // bukan match gelar
+    if (draw || winner === champ) {
+      cur.defenses++; // pertahanan sukses (seri = juara retain)
+    } else {
+      cur.lost = m.date;
+      cur.current = false;
+      champ = winner;
+      cur = { id: champ, from: loser, gained: m.date, lost: null, defenses: 0, current: true };
+      reigns.push(cur);
+    }
+  }
+  return reigns;
 }
 
 // Baris h2h dari perspektif satu pemain, sorted by jumlah match desc
@@ -253,5 +288,6 @@ if (typeof module !== 'undefined') {
     h2hRowsFor,
     favoriteClub,
     winrate,
+    computeSash,
   };
 }

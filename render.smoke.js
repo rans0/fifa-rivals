@@ -39,6 +39,7 @@ setTimeout(() => {
   assert.ok((html.match(/MATCH DAY/g) || []).length === days.size, 'semua match day ke-render');
   assert.ok((html.match(/class="match/g) || []).length === matches.length, 'semua baris match ke-render');
   assert.ok((store['#crown'].innerHTML.match(/class="reign/g) || []).length >= 1, 'crown history ke-render');
+  assert.ok((store['#sash'].innerHTML.match(/class="reign/g) || []).length >= 1, 'slempang ke-render');
   assert.ok(store['#records'].innerHTML.includes('rec'), 'records ke-render');
   assert.ok(store['#banner'].innerHTML.includes('champ'), 'banner ke-render');
   assert.ok(store['#h2h-table'].innerHTML.includes('tbody'), 'h2h ke-render');

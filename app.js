@@ -183,6 +183,33 @@ function renderCrown() {
   );
 }
 
+/* ---------- render: slempang kemenangan (defended sash) ---------- */
+
+function renderSash() {
+  const box = $('#sash');
+  if (!S.sash.length) { box.closest('.sash-sec').hidden = true; return; }
+  const cur = S.sash.length - 1;
+  box.innerHTML = S.sash
+    .map((r, i) => {
+      const isCur = i === cur;
+      const range = r.from === null && r.gained === r.lost
+        ? fmtDate(r.gained)
+        : `${fmtDate(r.gained)} → ${isCur ? 'now' : fmtDate(r.lost)}`;
+      const took = r.from ? `beat ${esc(S.byId[r.from].name)}` : 'claimed vacant sash';
+      const def = `${r.defenses} defense${r.defenses === 1 ? '' : 's'}`;
+      return `<div class="reign${isCur ? ' cur' : ''} click" data-id="${esc(r.id)}">
+        <span class="rn-date">${range}</span>
+        <span class="rn-name">${isCur ? '🎗️ ' : ''}${esc(S.byId[r.id].name)}</span>
+        <span class="rn-meta"><b>${def}</b> · ${took}</span>
+      </div>`;
+    })
+    .reverse()
+    .join('');
+  box.querySelectorAll('.reign').forEach((el) =>
+    el.addEventListener('click', () => { location.hash = `#/p/${el.dataset.id}`; })
+  );
+}
+
 /* ---------- render: leaderboard ---------- */
 
 function renderLeaderboard() {
@@ -870,6 +897,7 @@ async function boot() {
   renderRecords();
   renderH2H();
   renderCrown();
+  renderSash();
 
   $('#lb-search').addEventListener('input', renderLeaderboard);
   $('#dl-standings').addEventListener('click', downloadStandings);
