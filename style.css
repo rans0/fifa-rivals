@@ -349,8 +349,8 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 }
 .match .date { color: var(--mut); font: 500 12px var(--font-mono); }
 .match .sub { display: block; font-size: 10px; color: var(--mut); margin-top: 2px; }
-.match .pl { display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-weight: 700; text-align: right; }
-.match .pl.r { justify-content: flex-start; text-align: left; }
+.match .pl { display: flex; align-items: center; gap: 6px; font-weight: 700; } /* anchor sisi luar, isi mengalir ke skor */
+.match .pl.r { justify-content: flex-end; text-align: right; }
 .match .pl .cn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .match .sc {
   text-align: center;
