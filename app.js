@@ -341,7 +341,7 @@ function dayTopPerformer(list) {
 }
 
 // Baris satu match + chip ELO pemenang & highlight big win (margin ≥ 4)
-function matchRow(m) {
+function matchRow(m, dly) {
   const aWin = m.aScore > m.bScore;
   const draw = m.aScore === m.bScore;
   const big = Math.abs(m.aScore - m.bScore) >= 4;
@@ -350,7 +350,7 @@ function matchRow(m) {
     const gain = winner === 'a' ? m.eloDelta : -m.eloDelta;
     return gain > 0 ? `<span class="elo-chip">+${gain}</span>` : '';
   };
-  return `<div class="match${big ? ' big' : ''}">
+  return `<div class="match${big ? ' big' : ''}"${dly()}>
     <span class="date">${fmtDate(m.date)}<span class="sub">${m.aScore + m.bScore} goals</span></span>
     <span class="pl">${chip(m.aClub)}<span class="cn ${aWin ? 'win' : ''}">${esc(S.byId[m.a].name)}${aWin ? ' 🏆' : draw ? ' 🤝' : ''}${eloChip('a')}</span></span>
     <span class="sc">${m.aScore}–${m.bScore}</span>
@@ -370,11 +370,13 @@ function renderMatches() {
   const leaderByDate = new Map(S.daily.map((d) => [d.date, d]));
   const dayNo = new Map(S.daily.map((d, i) => [d.date, i + 1])); // oldest = 1
   let html = '';
+  let k = 0; // stagger: tiap elemen muncul berurutan, cap 500ms
+  const dly = () => ` style="animation-delay:${Math.min(k++ * 45, 500)}ms"`;
   for (const date of [...days.keys()].sort().reverse()) {
     const list = days.get(date);
     const top = dayTopPerformer(list);
     const lead = leaderByDate.get(date);
-    html += `<div class="day-head">
+    html += `<div class="day-head"${dly()}>
       <div class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small>${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></div>
       <div class="dh-stats">
         <span>⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)} goals</span>
@@ -382,7 +384,7 @@ function renderMatches() {
         ${lead ? `<span>👑 ${esc(S.byId[lead.id].name)} ${Math.round(lead.elo)}</span>` : ''}
       </div>
     </div>`;
-    html += list.map(matchRow).join('');
+    html += list.map((m) => matchRow(m, dly())).join('');
   }
   $('#match-list').innerHTML = html;
 }

@@ -312,6 +312,7 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
   gap: 8px 16px; flex-wrap: wrap;
   margin: 24px 0 10px; padding-bottom: 7px;
   border-bottom: 2px solid var(--line-strong);
+  animation: riseIn 0.4s ease both;
 }
 .day-head .dh-t { font: 400 22px/1 var(--font-display); letter-spacing: 0.07em; }
 .day-head .dh-t small {
