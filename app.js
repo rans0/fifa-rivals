@@ -407,7 +407,7 @@ function renderMatches() {
       <span class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small> · ${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></span>
       <span class="dh-stats">⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)}${top ? ` · 🔥 ${esc(S.byId[top.id].name)} ${top.s.w}W` : ''}${lead ? ` · 👑 ${esc(S.byId[lead.id].name)} ${Math.round(lead.elo)}` : ''}</span>
     </div>`;
-    html += list.map((m) => matchRow(m, dly)).join('');
+    html += list.slice().reverse().map((m) => matchRow(m, dly)).join(''); // terbaru dulu
   }
   $('#match-list').innerHTML = html;
 }
@@ -499,7 +499,7 @@ function renderPlayer(id) {
           <span class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small> · ${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></span>
           <span class="dh-stats">${r.w}W ${r.d}D ${r.l}L · ⚽ ${r.g}</span>
         </div>`;
-        const rows = list.map((m) => {
+        const rows = list.slice().reverse().map((m) => { // terbaru dulu
           const slotA = m.a === id;
           const my = slotA ? m.aScore : m.bScore;
           const op = slotA ? m.bScore : m.aScore;
