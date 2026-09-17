@@ -199,7 +199,7 @@ function renderSash() {
       const def = `${r.defenses} defense${r.defenses === 1 ? '' : 's'}`;
       return `<div class="reign${isCur ? ' cur' : ''} click" data-id="${esc(r.id)}">
         <span class="rn-date">${range}</span>
-        <span class="rn-name">${isCur ? '🎗️ ' : ''}${esc(S.byId[r.id].name)}</span>
+        <span class="rn-name">${isCur ? '👑 ' : ''}${esc(S.byId[r.id].name)}</span>
         <span class="rn-meta"><b>${def}</b> · ${took}</span>
       </div>`;
     })
