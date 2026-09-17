@@ -477,12 +477,12 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 
 /* ---------- mini bar ---------- */
 .minibar {
-  display: inline-block; height: 7px; width: 92px;
+  display: inline-flex; height: 7px; width: 92px;
   border-radius: 2px; overflow: hidden;
   background: #f6d7da;
   vertical-align: middle;
 }
-.minibar i { display: inline-block; height: 100%; background: var(--ink); }
+.minibar i { height: 100%; background: var(--ink); }
 .minibar i.d { background: #d3d9d5; }
 
 /* ---------- misc ---------- */
