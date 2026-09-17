@@ -306,23 +306,20 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 .reign.cur .rn-date, .reign.cur .rn-meta { color: rgba(255, 255, 255, 0.62); }
 .reign.cur .rn-meta b, .reign.cur .rn-name { color: #fff; }
 
-/* ---------- match day grouping ---------- */
+/* ---------- match day grouping: sticky one-liner ---------- */
 .day-head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 8px 16px; flex-wrap: wrap;
-  margin: 24px 0 10px; padding-bottom: 7px;
+  position: sticky; top: var(--topbar-h, 80px); z-index: 30;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 20px 0 8px; padding: 7px 10px 6px;
+  background: var(--paper);
   border-bottom: 2px solid var(--line-strong);
   animation: riseIn 0.4s ease both;
 }
-.day-head .dh-t { font: 400 22px/1 var(--font-display); letter-spacing: 0.07em; }
-.day-head .dh-t small {
-  display: block; margin-top: 3px;
-  font: 500 10.5px/1 var(--font-mono);
-  color: var(--mut); letter-spacing: 0.16em; text-transform: uppercase;
-}
+.day-head .dh-t { font: 400 17px/1 var(--font-display); letter-spacing: 0.07em; white-space: nowrap; }
+.day-head .dh-t small { font: 500 10px/1 var(--font-mono); color: var(--mut); letter-spacing: 0.1em; }
 .day-head .dh-stats {
-  display: flex; gap: 16px; flex-wrap: wrap;
-  font: 600 13px/1 var(--font-body); color: var(--ink-soft); white-space: nowrap;
+  font: 600 12px/1 var(--font-body); color: var(--ink-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 #match-list .match:first-of-type { margin-top: 0; }
 #match-list .day-head:first-child { margin-top: 0; }

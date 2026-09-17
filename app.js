@@ -377,12 +377,8 @@ function renderMatches() {
     const top = dayTopPerformer(list);
     const lead = leaderByDate.get(date);
     html += `<div class="day-head"${dly()}>
-      <div class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small>${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></div>
-      <div class="dh-stats">
-        <span>⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)} goals</span>
-        ${top ? `<span>🔥 ${esc(S.byId[top.id].name)} ${top.s.w}W</span>` : ''}
-        ${lead ? `<span>👑 ${esc(S.byId[lead.id].name)} ${Math.round(lead.elo)}</span>` : ''}
-      </div>
+      <span class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small> · ${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></span>
+      <span class="dh-stats">⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)}${top ? ` · 🔥 ${esc(S.byId[top.id].name)} ${top.s.w}W` : ''}${lead ? ` · 👑 ${esc(S.byId[lead.id].name)} ${Math.round(lead.elo)}` : ''}</span>
     </div>`;
     html += list.map((m) => matchRow(m, dly())).join('');
   }
@@ -860,6 +856,8 @@ async function boot() {
   }
   S = computeStats(DATA.players, DATA.matches);
   await preloadClubImgs(); // sebelum render biar crest gak kedipan fallback
+  // offset sticky day-head = tinggi topbar (berubah antara desktop/mobile)
+  document.documentElement.style.setProperty('--topbar-h', $('.topbar').offsetHeight + 'px');
 
   if (S.skipped.length) {
     const w = $('#data-warn');
