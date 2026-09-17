@@ -572,25 +572,21 @@ function drawCard(s) {
   ctx.textAlign = 'right'; ctx.fillStyle = '#9aa39e'; ctx.font = FONT(600, 25);
   ctx.fillText('fifa-rivals.projectlabs.id', W - M, 62);
 
-  // hero: rata kiri — kicker, nama, ELO; badge rank kanan-atas
+  // hero: watermark crest signature club + nama overlay + badge rank
+  const favC = favoriteClub(s);
+  const wmCrest = favC && CLUB_IMGS.get(favC.club);
+  if (wmCrest) {
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    ctx.drawImage(wmCrest, W - M - 520, 150, 520, 520);
+    ctx.restore();
+  }
   ctx.textAlign = 'left';
   ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
-  ctx.fillText(`${s.p} MATCHES  ·  PEAK ELO ${Math.round(s.peakElo)}`, M, 240);
+  ctx.fillText(`RANK #${s.rank}  ·  PEAK ELO ${Math.round(s.peakElo)}`, M, 240);
   ctx.fillStyle = INK;
   ctx.font = BEB(fitText(s.name.toUpperCase(), W - 2 * M - 260, 150, BEB));
   ctx.fillText(s.name.toUpperCase(), M, 420);
-
-  ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
-  ctx.fillText('ELO RATING', M, 515);
-  ctx.fillStyle = INK; ctx.font = BEB(200);
-  ctx.fillText(String(Math.round(s.elo)), M, 700);
-  const d = s.lastDelta;
-  if (d !== 0) {
-    const ex = M + ctx.measureText(String(Math.round(s.elo))).width + 36;
-    ctx.font = FONT(800, 54);
-    ctx.fillStyle = d > 0 ? '#0a7a3c' : RED;
-    ctx.fillText(`${d > 0 ? '▲ +' + d : '▼ ' + d}`, ex, 698);
-  }
 
   // badge rank — kanan atas hero
   const bx = W - M - 105, by = 330;
@@ -607,7 +603,28 @@ function drawCard(s) {
   ctx.font = FONT(800, 34); ctx.fillText('RANK', bx, by - 16);
   ctx.font = BEB(104); ctx.fillText(`#${s.rank}`, bx, by + 68);
 
-  // sparkline band dengan hairline
+  // ELO centerpiece — angka raksasa, sparkline nyambung langsung di bawahnya
+  ctx.textAlign = 'left';
+  ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
+  ctx.fillText('ELO RATING', M, 545);
+  ctx.fillStyle = INK; ctx.font = BEB(200);
+  const eloTxt = String(Math.round(s.elo));
+  ctx.fillText(eloTxt, M, 730);
+  const eloW = ctx.measureText(eloTxt).width; // ukur SEBELUM ganti font
+  const d = s.lastDelta;
+  let chipX = M + eloW + 36;
+  if (d !== 0) {
+    ctx.font = FONT(800, 54);
+    ctx.fillStyle = d > 0 ? '#0a7a3c' : RED;
+    ctx.fillText(`${d > 0 ? '▲ +' + d : '▼ ' + d}`, chipX, 728);
+    chipX += ctx.measureText(`${d > 0 ? '▲ +' + d : '▼ ' + d}`).width + 24;
+  }
+  if (Math.round(s.elo) >= Math.round(s.peakElo) && s.p > 0) { // chip career best
+    const tW = 210;
+    rr(chipX, 668, tW, 48, 10); ctx.fillStyle = RED; ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.font = FONT(800, 24); ctx.textAlign = 'center';
+    ctx.fillText('CAREER BEST', chipX + tW / 2, 700);
+  }
   const hist = s.eloHist;
   if (hist.length > 1) {
     const x0 = M, x1 = W - M, y0 = 790, y1 = 905;
@@ -626,53 +643,86 @@ function drawCard(s) {
     ctx.beginPath(); ctx.arc(...pts[pts.length - 1], 10, 0, Math.PI * 2); ctx.fillStyle = RED; ctx.fill();
   }
 
-  // stat grid — rata kiri, 3×2
-  const cells = [
+  // stat hierarkis 2 besar + 4 kecil — mata lihat yang penting dulu
+  const big = [
     ['WIN RATE', wr(s) + '%'],
     ['RECORD (W-D-L)', `${s.w}-${s.d}-${s.l}`],
-    ['GOALS F : A', `${s.gf} : ${s.ga}`],
-    ['BEST WIN STREAK', String(s.bestStreak)],
-    ['GOALS / MATCH', s.p ? (s.gf / s.p).toFixed(1) : '0.0'],
-    ['PEAK ELO', String(Math.round(s.peakElo))],
   ];
-  const bw = (W - 2 * M - 2 * 20) / 3, bh = 170, gy = 985;
-  cells.forEach(([k, v], i) => {
-    const x = M + (i % 3) * (bw + 20);
-    const y = gy + Math.floor(i / 3) * (bh + 20);
-    rr(x, y, bw, bh, 12);
+  const bw2 = (W - 2 * M - 20) / 2, bh2 = 190, gy = 1010;
+  big.forEach(([k, v], i) => {
+    const x = M + i * (bw2 + 20);
+    rr(x, gy, bw2, bh2, 12);
     ctx.fillStyle = PAPER; ctx.fill();
     ctx.lineWidth = 2; ctx.strokeStyle = LINE; ctx.stroke();
     ctx.textAlign = 'left';
-    ctx.fillStyle = MUT; ctx.font = FONT(700, 24);
-    ctx.fillText(k, x + 26, y + 50);
-    ctx.fillStyle = INK; ctx.font = BEB(fitText(v, bw - 52, 78, BEB));
-    ctx.fillText(v, x + 26, y + 132);
+    ctx.fillStyle = MUT; ctx.font = FONT(700, 26);
+    ctx.fillText(k, x + 28, gy + 54);
+    ctx.fillStyle = INK; ctx.font = BEB(fitText(v, bw2 - 56, 108, BEB));
+    ctx.fillText(v, x + 28, gy + 158);
+  });
+  const small = [
+    ['GOALS F : A', `${s.gf} : ${s.ga}`],
+    ['BEST STREAK', String(s.bestStreak)],
+    ['GOALS / MATCH', s.p ? (s.gf / s.p).toFixed(1) : '0.0'],
+    ['PEAK ELO', String(Math.round(s.peakElo))],
+  ];
+  const bw4 = (W - 2 * M - 3 * 16) / 4, bh4 = 140, gy2 = gy + bh2 + 24;
+  small.forEach(([k, v], i) => {
+    const x = M + i * (bw4 + 16);
+    rr(x, gy2, bw4, bh4, 12);
+    ctx.fillStyle = PAPER; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = LINE; ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.fillStyle = MUT; ctx.font = FONT(700, 20);
+    ctx.fillText(k, x + 20, gy2 + 42);
+    ctx.fillStyle = INK; ctx.font = BEB(fitText(v, bw4 - 40, 68, BEB));
+    ctx.fillText(v, x + 20, gy2 + 114);
   });
 
-  // recent form strip
+  // form strip besar
   const form = s.form.slice(-5);
   if (form.length) {
     ctx.textAlign = 'left';
     ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
-    ctx.fillText('RECENT FORM', M, 1445);
-    const sz = 64, gap = 16;
+    ctx.fillText('LAST 5', M, gy2 + bh4 + 60);
+    const sz = 76, gap = 18, fy = gy2 + bh4 + 88;
     form.forEach((f, i) => {
-      const x = M + i * (sz + gap), y = 1470;
+      const x = M + i * (sz + gap);
       if (f === 'W') {
-        rr(x, y, sz, sz, 10); ctx.fillStyle = INK; ctx.fill();
+        rr(x, fy, sz, sz, 12); ctx.fillStyle = INK; ctx.fill();
         ctx.fillStyle = '#ffffff';
       } else if (f === 'L') {
-        rr(x, y, sz, sz, 10); ctx.fillStyle = '#ffffff'; ctx.fill();
+        rr(x, fy, sz, sz, 12); ctx.fillStyle = '#ffffff'; ctx.fill();
         ctx.lineWidth = 4; ctx.strokeStyle = RED; ctx.stroke();
         ctx.fillStyle = RED;
       } else {
-        rr(x, y, sz, sz, 10); ctx.fillStyle = PAPER; ctx.fill();
+        rr(x, fy, sz, sz, 12); ctx.fillStyle = PAPER; ctx.fill();
         ctx.lineWidth = 2; ctx.strokeStyle = LINE; ctx.stroke();
         ctx.fillStyle = MUT;
       }
-      ctx.textAlign = 'center'; ctx.font = FONT(800, 30);
-      ctx.fillText(f, x + sz / 2, y + sz / 2 + 11);
+      ctx.textAlign = 'center'; ctx.font = FONT(800, 36);
+      ctx.fillText(f, x + sz / 2, fy + sz / 2 + 13);
     });
+  }
+
+  // rival terketat — h2h paling seimbang (min 2 match), selisih menang terkecil;
+  // fallback lawan terbanyak biar blok gak bolong
+  const allRows = h2hRowsFor(S, s.id);
+  const rivalRows = allRows.filter((r) => r.count >= 2);
+  rivalRows.sort((a, b) => Math.abs(a.w - a.l) - Math.abs(b.w - b.l) || b.count - a.count);
+  const rival = rivalRows[0] || allRows[0];
+  if (rival) {
+    const ry = gy2 + bh4 + 88 + 76 + 54; // tepat di bawah form strip
+    rr(M, ry, W - 2 * M, 118, 12);
+    ctx.fillStyle = PAPER; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = LINE; ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.fillStyle = MUT; ctx.font = FONT(700, 22);
+    ctx.fillText('CLOSEST RIVAL', M + 28, ry + 42);
+    ctx.fillStyle = INK; ctx.font = BEB(52);
+    ctx.fillText(`VS ${S.byId[rival.oppId].name.toUpperCase()}`, M + 28, ry + 100);
+    ctx.textAlign = 'right'; ctx.font = FONT(700, 34);
+    ctx.fillText(`${rival.w}W ${rival.d}D ${rival.l}L`, W - M - 28, ry + 92);
   }
 
   // footer bar: signature club kiri, generated kanan
