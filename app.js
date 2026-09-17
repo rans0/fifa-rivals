@@ -913,13 +913,13 @@ async function downloadStandings() {
 
 /* ---------- router ---------- */
 
-const VIEWS = ['leaderboard', 'h2h', 'clubs', 'matches', 'player'];
+const VIEWS = ['leaderboard', 'h2h', 'clubs', 'matches', 'rules', 'player'];
 function route() {
   const h = location.hash || '#/leaderboard';
   const parts = h.replace(/^#\//, '').split('/');
 
   let tab = 'leaderboard';
-  if (parts[0] === 'h2h' || parts[0] === 'clubs' || parts[0] === 'matches') tab = parts[0];
+  if (parts[0] === 'h2h' || parts[0] === 'clubs' || parts[0] === 'matches' || parts[0] === 'rules') tab = parts[0];
   else if (parts[0] === 'p' && parts[1]) {
     $('#view-player').hidden = false;
     renderPlayer(parts[1]);

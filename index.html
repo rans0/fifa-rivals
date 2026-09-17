@@ -20,6 +20,7 @@
         <a href="#/h2h" data-tab="h2h">Head-to-Head</a>
         <a href="#/clubs" data-tab="clubs">Club</a>
         <a href="#/matches" data-tab="matches">Matches</a>
+        <a href="#/rules" data-tab="rules">Rules</a>
       </nav>
     </div>
   </header>
@@ -91,6 +92,88 @@
         <select id="match-filter"></select>
       </div>
       <div id="match-list"></div>
+    </section>
+
+    <section id="view-rules" class="view" hidden>
+      <div class="view-head"><h2>Rules &amp; Calculations</h2></div>
+      <p class="hint">How every rating and stat on this site is computed. All numbers are recomputed from <code>data.json</code> in date order — deterministic, same result every time.</p>
+
+      <div class="doc">
+        <h3>ELO rating</h3>
+        <p>Every player starts at <b>1200</b>. After each match, both ratings are updated using the standard Elo system with <b>K&nbsp;=&nbsp;32</b>:</p>
+        <div class="formula">
+          E<sub>A</sub> = 1 / (1 + 10<sup>(R<sub>B</sub> − R<sub>A</sub>) / 400</sup>)&nbsp;&nbsp;&nbsp;← expected score of A<br>
+          Δ<sub>A</sub> = round( 32 × (S<sub>A</sub> − E<sub>A</sub>) )&nbsp;&nbsp;&nbsp;← rating change of A<br>
+          R'<sub>A</sub> = R<sub>A</sub> + Δ<sub>A</sub>&nbsp;&nbsp;·&nbsp;&nbsp;R'<sub>B</sub> = R<sub>B</sub> − Δ<sub>A</sub>
+        </div>
+        <p>The actual score <b>S</b> is <b>1</b> for a win, <b>0.5</b> for a draw, <b>0</b> for a loss. The change is rounded to a whole number each match and is always <b>zero-sum</b>: what the winner gains, the loser loses.</p>
+
+        <h4>Worked example — deltas from the lower-rated player's view</h4>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr>
+            <th>Rating gap</th><th class="num">Expected W</th>
+            <th class="num">Win</th><th class="num">Draw</th><th class="num">Loss</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>Equal (1200 vs 1200)</td><td class="num">50%</td><td class="num pos">+16</td><td class="num">±0</td><td class="num neg">−16</td></tr>
+            <tr><td>−100 (1200 vs 1300)</td><td class="num">36%</td><td class="num pos">+20</td><td class="num pos">+4</td><td class="num neg">−12</td></tr>
+            <tr><td>−200 (1200 vs 1400)</td><td class="num">24%</td><td class="num pos">+24</td><td class="num pos">+8</td><td class="num neg">−8</td></tr>
+            <tr><td>−400 (1200 vs 1600)</td><td class="num">9%</td><td class="num pos">+29</td><td class="num pos">+13</td><td class="num neg">−3</td></tr>
+          </tbody>
+        </table></div>
+        <ul>
+          <li><b>Upsets pay more.</b> The bigger the rating gap, the more the underdog gains by winning — and the more the favorite loses. A favorite beating an underdog 400 below gains only +8 (mirror of −400 Loss).</li>
+          <li><b>Drawing against a higher-rated player earns ELO</b> (+4 / +8 / +13 above), because the draw (0.5) beat the expectation.</li>
+          <li><b>Goals do NOT affect ELO.</b> Only the result W/D/L matters — a 7–0 win moves the rating exactly as much as a 1–0 win. Goals only feed GF/GA, +/−, and the Records cards.</li>
+          <li><b>Match order:</b> matches are processed in date order (same date → order in <code>data.json</code>), each match using the ratings left by the previous one.</li>
+        </ul>
+
+        <h3>Leaderboard terms</h3>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+          <tbody>
+            <tr><td><b># Rank</b></td><td>Position by current ELO, highest first. This is the league standing — there is no separate point system.</td></tr>
+            <tr><td><b>Move ▲▼</b></td><td>Rank change vs the end of the <b>previous match day</b>. The table is fully re-ranked, so a player who didn't play can still rise or be overtaken. New row = <i>—</i>.</td></tr>
+            <tr><td><b>ELO ±Δ</b></td><td>Current rating, plus the change from the player's most recent match.</td></tr>
+            <tr><td><b>MP W D L</b></td><td>Matches played, wins, draws, losses.</td></tr>
+            <tr><td><b>GF GA</b></td><td>Goals for / against, summed over all matches.</td></tr>
+            <tr><td><b>+/-</b></td><td>Goal difference = GF − GA.</td></tr>
+            <tr><td><b>Win %</b></td><td>W ÷ MP as a percentage, rounded to one decimal.</td></tr>
+            <tr><td><b>Form</b></td><td>Last 5 results (W/D/L), oldest → newest.</td></tr>
+            <tr><td><b>Win Streak</b></td><td>🔥 current consecutive wins, with the best streak ever in parentheses.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Player page terms</h3>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+          <tbody>
+            <tr><td><b>Peak ELO</b></td><td>Highest rating ever reached (never below the 1200 start). "Career best" shows while the current ELO equals it.</td></tr>
+            <tr><td><b>Signature club</b></td><td>Club used most often; tie broken by most wins with it.</td></tr>
+            <tr><td><b>Opponents / Trend</b></td><td>Head-to-head record vs each opponent; the bar shows win/draw share of meetings.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Crowns &amp; the sash</h3>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+          <tbody>
+            <tr><td><b>Match Day</b></td><td>One date that has matches. Numbered from the oldest = 1.</td></tr>
+            <tr><td><b>👑 Crown History</b></td><td>Who ended each match day ranked #1 by ELO. Consecutive days on top merge into one reign.</td></tr>
+            <tr><td><b>⛰️ King of the Hill</b></td><td><b>Not ELO-based.</b> The winner of the first non-drawn match becomes the inaugural holder. After that, only matches featuring the holder count: win or draw = successful defense, loss = the sash passes to the challenger. Matches without the holder change nothing.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Head-to-Head &amp; Records</h3>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+          <tbody>
+            <tr><td><b>H2H matrix</b></td><td>Cell reads <b>row wins – draws – column wins</b>. Tap a cell for the full duel breakdown and all matches.</td></tr>
+            <tr><td><b>Dominance</b></td><td>Share of wins in a duel, as a percentage of all meetings between the pair.</td></tr>
+            <tr><td><b>Records</b></td><td>Biggest Win = largest goal margin · Highest Score = most total goals in a match · Most Played = most frequent pairing · Tightest = smallest win-count gap in a duel (min 2 meetings, tie → more meetings).</td></tr>
+          </tbody>
+        </table></div>
+      </div>
     </section>
 
     <section id="view-player" class="view" hidden></section>

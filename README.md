@@ -11,6 +11,7 @@ aggregate club) are computed client-side from `data.json`.
 - **Head-to-head**: matrix of all players + per-pair duel details.
 - **Club**: per-club stats (global & per player) + real crests.
 - **History**: all matches, filterable per player.
+- **Rules**: in-site explainer of the ELO math (with worked examples) and every stat term.
 - **Stat card**: each player can download a stat card as a 1080×1350 PNG (share-ready for IG/WA).
 - **Records**: longest winstreak, biggest win, highest-scoring match, most frequent rival.
 
