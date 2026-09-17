@@ -130,27 +130,27 @@ function renderRecords() {
   const nm = (id) => esc(S.byId[id].name);
   const cards = [];
   if (r.bestStreak)
-    cards.push(['Longest Win Streak', `🔥 ${r.bestStreak.len} matches`, nm(r.bestStreak.id)]);
+    cards.push(['🔥', 'Win Streak', `${r.bestStreak.len} matches`, nm(r.bestStreak.id)]);
   if (r.biggestWin) {
     const m = r.biggestWin;
     const w = m.aScore > m.bScore ? m.a : m.b;
-    cards.push(['Biggest Win', `${Math.abs(m.aScore - m.bScore)}-goal margin`, `${nm(w)} · ${m.aScore}–${m.bScore}`]);
+    cards.push(['💥', 'Biggest Win', `${Math.abs(m.aScore - m.bScore)}-goal`, `${nm(w)} · ${m.aScore}–${m.bScore}`]);
   }
   if (r.topScoring) {
     const m = r.topScoring;
-    cards.push(['Highest-Scoring Match', `${m.aScore + m.bScore} goals`, `${nm(m.a)} vs ${nm(m.b)}`]);
+    cards.push(['⚽', 'Highest Score', `${m.aScore + m.bScore} goals`, `${nm(m.a)} vs ${nm(m.b)}`]);
   }
   if (r.mostPlayedPair)
-    cards.push(['Most-Played Rivalry', `${r.mostPlayedPair.count} meetings`, `${nm(r.mostPlayedPair.ids[0])} vs ${nm(r.mostPlayedPair.ids[1])}`]);
+    cards.push(['🤝', 'Most Played', `${r.mostPlayedPair.count} meetings`, `${nm(r.mostPlayedPair.ids[0])} vs ${nm(r.mostPlayedPair.ids[1])}`]);
   if (r.worstStreak)
-    cards.push(['Longest Losing Streak', `🥶 ${r.worstStreak.len} matches`, nm(r.worstStreak.id)]);
+    cards.push(['🥶', 'Losing Streak', `${r.worstStreak.len} matches`, nm(r.worstStreak.id)]);
   if (r.tightH2h) {
     const t = r.tightH2h;
-    cards.push(['Tightest Rivalry', `${t.wX}–${t.d}–${t.wY}`, `${nm(t.ids[0])} vs ${nm(t.ids[1])} · ${t.count} meetings`]);
+    cards.push(['⚖️', 'Tightest', `${t.wX}–${t.d}–${t.wY}`, `${nm(t.ids[0])} vs ${nm(t.ids[1])}`]);
   }
-  $('#records').innerHTML = cards
-    .map(([k, v, s]) => `<div class="rec"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`)
-    .join('');
+  $('#records').innerHTML = '<div class="reel">' + cards
+    .map(([ic, k, v, s]) => `<div class="rec"><div class="ic">${ic}</div><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`)
+    .join('') + '</div>';
 }
 
 /* ---------- render: crown history (pemuncak ELO per match day) ---------- */

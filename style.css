@@ -116,30 +116,44 @@ code { font: 12px var(--font-mono); color: var(--mut); }
 .banner .score b { color: #fff; font-size: 17px; }
 
 /* ---------- records ---------- */
-.records {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
+/* records: horizontal highlight reel */
+.reel {
+  display: flex; gap: 12px;
   margin: 16px 0 24px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+  scrollbar-width: none;
 }
+.reel::-webkit-scrollbar { display: none; }
 .rec {
+  flex: 0 0 152px;
+  scroll-snap-align: start;
+  position: relative;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 14px 16px 13px;
+  padding: 13px 15px 12px;
   animation: riseIn 0.45s ease both;
 }
-.rec:nth-child(1) { animation-delay: 0.08s; }
-.rec:nth-child(2) { animation-delay: 0.16s; }
-.rec:nth-child(3) { animation-delay: 0.24s; }
-.rec:nth-child(4) { animation-delay: 0.32s; }
+.rec::before {
+  content: ''; position: absolute; left: 0; top: 13px; bottom: 12px; width: 3px;
+  background: var(--acc); border-radius: 0 2px 2px 0;
+}
+.rec:nth-child(1) { animation-delay: 0.06s; }
+.rec:nth-child(2) { animation-delay: 0.12s; }
+.rec:nth-child(3) { animation-delay: 0.18s; }
+.rec:nth-child(4) { animation-delay: 0.24s; }
+.rec:nth-child(5) { animation-delay: 0.30s; }
+.rec:nth-child(6) { animation-delay: 0.36s; }
+.rec .ic { font-size: 19px; line-height: 1; margin-bottom: 7px; }
 .rec .k {
-  font: 500 10.5px/1.3 var(--font-mono);
-  letter-spacing: 0.18em; text-transform: uppercase;
+  font: 500 10px/1.3 var(--font-mono);
+  letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--mut);
 }
-.rec .v { font: 400 27px/1.1 var(--font-display); letter-spacing: 0.04em; margin-top: 5px; }
-.rec .s { font-size: 13px; color: var(--mut); margin-top: 2px; }
+.rec .v { font: 400 25px/1.1 var(--font-display); letter-spacing: 0.04em; margin-top: 4px; }
+.rec .s { font-size: 12.5px; color: var(--mut); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---------- views ---------- */
 .view { margin-bottom: 46px; }
