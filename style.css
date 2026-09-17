@@ -335,8 +335,8 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
   font: 600 12px/1 var(--font-body); color: var(--ink-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-#match-list .match:first-of-type { margin-top: 0; }
-#match-list .day-head:first-child { margin-top: 0; }
+.match:first-of-type { margin-top: 0; }
+.day-head:first-child { margin-top: 0; }
 
 /* ---------- match rows ---------- */
 .match {

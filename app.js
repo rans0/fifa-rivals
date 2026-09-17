@@ -482,10 +482,24 @@ function renderPlayer(id) {
     </tbody></table></div>
 
     <div class="view-head"><h2>Recent matches</h2></div>
-    <div>${
-      myMatches
-        .slice(0, 10)
-        .map((m) => {
+    <div>${(() => {
+      const dayNo = new Map(S.daily.map((d, i) => [d.date, i + 1]));
+      const byDate = new Map();
+      for (const m of myMatches.slice(0, 10)) {
+        if (!byDate.has(m.date)) byDate.set(m.date, []);
+        byDate.get(m.date).push(m);
+      }
+      return [...byDate.entries()].map(([date, list]) => {
+        const r = list.reduce((r, m) => {
+          const my = m.a === id ? m.aScore : m.bScore, op = m.a === id ? m.bScore : m.aScore;
+          r.g += my; my > op ? r.w++ : my < op ? r.l++ : r.d++;
+          return r;
+        }, { w: 0, d: 0, l: 0, g: 0 });
+        const head = `<div class="day-head">
+          <span class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small> · ${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></span>
+          <span class="dh-stats">${r.w}W ${r.d}D ${r.l}L · ⚽ ${r.g}</span>
+        </div>`;
+        const rows = list.map((m) => {
           const slotA = m.a === id;
           const my = slotA ? m.aScore : m.bScore;
           const op = slotA ? m.bScore : m.aScore;
@@ -498,9 +512,10 @@ function renderPlayer(id) {
             <span class="sc">${my}–${op}</span>
             <span class="pl r"><span class="cn">${esc(S.byId[opp].name)}</span>${chip(opClub)}</span>
           </div>`;
-        })
-        .join('')
-    }</div>`;
+        }).join('');
+        return head + rows;
+      }).join('');
+    })()}</div>`;
 
   $('#dl-card').addEventListener('click', () => downloadCard(s));
   document.querySelectorAll('#view-player tbody tr.click').forEach((tr) =>
