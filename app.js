@@ -153,6 +153,36 @@ function renderRecords() {
     .join('');
 }
 
+/* ---------- render: crown history (pemuncak ELO per match day) ---------- */
+
+function renderCrown() {
+  const box = $('#crown');
+  if (!S.daily.length) { box.closest('.crown-sec').hidden = true; return; }
+  // gabung hari beruntun dgn pemuncak sama → satu era (reign)
+  const reigns = [];
+  for (const d of S.daily) {
+    const last = reigns[reigns.length - 1];
+    if (last && last.id === d.id) { last.to = d.date; last.elo = d.elo; last.days++; }
+    else reigns.push({ id: d.id, from: d.date, to: d.date, elo: d.elo, days: 1 });
+  }
+  const cur = reigns.length - 1;
+  box.innerHTML = reigns
+    .map((r, i) => {
+      const isCur = i === cur;
+      const range = r.from === r.to ? fmtDate(r.from) : `${fmtDate(r.from)} → ${fmtDate(r.to)}`;
+      return `<div class="reign${isCur ? ' cur' : ''} click" data-id="${esc(r.id)}">
+        <span class="rn-date">${range}</span>
+        <span class="rn-name">${isCur ? '👑 ' : ''}${esc(S.byId[r.id].name)}</span>
+        <span class="rn-meta"><b>${Math.round(r.elo)}</b> ELO · ${r.days} day${r.days > 1 ? 's' : ''} on top</span>
+      </div>`;
+    })
+    .reverse()
+    .join('');
+  box.querySelectorAll('.reign').forEach((el) =>
+    el.addEventListener('click', () => { location.hash = `#/p/${el.dataset.id}`; })
+  );
+}
+
 /* ---------- render: leaderboard ---------- */
 
 function renderLeaderboard() {
@@ -791,6 +821,7 @@ async function boot() {
   renderBanner();
   renderRecords();
   renderH2H();
+  renderCrown();
 
   $('#lb-search').addEventListener('input', renderLeaderboard);
   $('#dl-standings').addEventListener('click', downloadStandings);

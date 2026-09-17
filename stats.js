@@ -79,6 +79,14 @@ function computeStats(players, matches) {
   const skipped = [];
   const valid = [];
 
+  const daily = []; // {date, id, elo} — pemuncak ELO di akhir tiap tanggal main
+  let curDate = null;
+  const snapDay = () => {
+    let top = null;
+    for (const p of players) if (top === null || byId[p.id].elo > byId[top].elo) top = p.id;
+    daily.push({ date: curDate, id: top, elo: byId[top].elo });
+  };
+
   for (const m of sortMatches(matches)) {
     const A = byId[m.a];
     const B = byId[m.b];
@@ -93,6 +101,9 @@ function computeStats(players, matches) {
       continue;
     }
     valid.push(m);
+
+    if (curDate !== null && m.date !== curDate) snapDay(); // tutup tanggal sebelumnya
+    curDate = m.date;
 
     const aWin = m.aScore > m.bScore;
     const draw = m.aScore === m.bScore;
@@ -192,6 +203,7 @@ function computeStats(players, matches) {
   }
 
   const lastMatch = valid[valid.length - 1] || null;
+  if (curDate !== null) snapDay(); // tanggal terakhir
 
   return {
     byId,
@@ -199,6 +211,7 @@ function computeStats(players, matches) {
     h2h,
     clubs,
     records: { biggestWin, topScoring, mostPlayedPair, bestStreak, worstStreak, tightH2h },
+    daily,
     lastMatch,
     skipped,
   };

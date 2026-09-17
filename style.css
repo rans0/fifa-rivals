@@ -272,6 +272,29 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
   text-align: center; margin-top: 3px;
 }
 
+/* ---------- crown history: reign timeline ---------- */
+.reign {
+  display: grid; grid-template-columns: 160px 1fr auto; align-items: center; gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px; margin-bottom: 9px;
+  cursor: pointer;
+  animation: riseIn 0.35s ease both;
+}
+.reign:hover { background: var(--acc-soft); }
+.reign .rn-date { color: var(--mut); font: 500 12px var(--font-mono); }
+.reign .rn-name { font: 400 25px/1 var(--font-display); letter-spacing: 0.05em; }
+.reign .rn-meta { color: var(--mut); font-weight: 600; font-size: 13px; white-space: nowrap; }
+.reign .rn-meta b { color: var(--ink); font-size: 15px; }
+.reign.cur {
+  background: var(--ink); border-color: var(--ink);
+  box-shadow: inset 4px 0 0 var(--acc);
+}
+.reign.cur:hover { background: #1a221e; }
+.reign.cur .rn-date, .reign.cur .rn-meta { color: rgba(255, 255, 255, 0.62); }
+.reign.cur .rn-meta b, .reign.cur .rn-name { color: #fff; }
+
 /* ---------- match rows ---------- */
 .match {
   display: grid; grid-template-columns: 88px 1fr 76px 1fr; align-items: center; gap: 8px;
@@ -297,6 +320,9 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 @media (max-width: 560px) {
   .match { grid-template-columns: 72px 1fr 60px 1fr; padding: 11px 12px; }
   .match .sc { font-size: 21px; }
+  .reign { grid-template-columns: 1fr auto; gap: 4px 12px; }
+  .reign .rn-date { grid-column: 1 / -1; }
+  .reign .rn-name { font-size: 22px; }
 }
 
 /* ---------- player page: split hero ---------- */

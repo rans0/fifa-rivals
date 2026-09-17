@@ -130,4 +130,19 @@ assert.strictEqual(st2.records.tightH2h.margin, 3, 'margin h2h st2 = 3');
 // 1 match saja tidak lolos syarat >= 2 meeting
 assert.strictEqual(st3.records.tightH2h, null, '1 meeting: tidak ada tightH2h');
 
+// daily: pemuncak ELO di akhir tiap tanggal
+// st: 01 x menang, 02 draw (x masih atas), 03 y menang → y salip
+assert.deepStrictEqual(st.daily.map((d) => `${d.date}:${d.id}`), [
+  '2026-01-01:x', '2026-01-02:x', '2026-01-03:y',
+], 'daily: x,x,lalu y');
+assert.strictEqual(st.daily[0].elo, ELO_BASE + 16, 'elo daily hari-1 = +16');
+assert.strictEqual(st.daily[2].elo, st.byId.y.elo, 'elo daily terakhir = elo akhir y');
+// st2: x menang hampir semua → x di atas 5 hari
+assert.deepStrictEqual(st2.daily.map((d) => d.id), ['x', 'x', 'x', 'x', 'x'], 'daily st2 semua x');
+assert.strictEqual(st2.daily[4].elo, st2.byId.x.elo, 'elo daily terakhir = elo akhir x');
+// st3: 1 match 1 hari
+assert.deepStrictEqual(st3.daily.map((d) => d.id), ['x'], 'daily 1 hari = x');
+// st5: tanggal dgn match invalid tetap pakai match valid saja
+assert.deepStrictEqual(st5.daily.map((d) => d.date), ['2026-01-01'], 'daily skip match invalid');
+
 console.log('✓ semua test lolos');
