@@ -697,7 +697,7 @@ function drawStandings() {
     ctx.fillStyle = INK;
     ctx.fillText(name, xName, rs + 90);
     const nameW = ctx.measureText(name).width;
-    // badge pergerakan rank vs sebelum match terakhir: hijau naik · merah turun · paper tetap
+    // badge pergerakan rank vs akhir match day sebelumnya: hijau naik · merah turun · paper tetap
     const mv = s.move;
     const bW = 70, bH = 44, bX = xName + nameW + 24, bY = rs + 34;
     rr(bX, bY, bW, bH, 11);

@@ -111,6 +111,23 @@ assert.strictEqual(st.byId.x.prevRank, 1, 'prevRank x = 1');
 assert.strictEqual(st3.byId.x.move, 0, '1 match: move x = 0');
 assert.strictEqual(st3.byId.y.move, 0, '1 match: move y = 0');
 
+// pergerakan dihitung vs akhir match day sebelumnya (ranking ulang penuh):
+// pemain yang gak main di hari terakhir tetap bisa naik/tergeser
+const players3 = [
+  { id: 'x', name: 'X' },
+  { id: 'y', name: 'Y' },
+  { id: 'z', name: 'Z' },
+];
+const st6 = computeStats(players3, [
+  { date: '2026-01-01', a: 'y', aClub: 'B', aScore: 1, b: 'x', bClub: 'A', bScore: 0 }, // hari 1: y menang → y1 z2 x3
+  { date: '2026-01-02', a: 'x', aClub: 'A', aScore: 2, b: 'z', bClub: 'C', bScore: 1 }, // hari 2: y gak main
+]);
+assert.strictEqual(st6.byId.y.rank, 1, 'y tetap rank 1');
+assert.strictEqual(st6.byId.y.move, 0, 'y gak main, gak bergerak');
+assert.strictEqual(st6.byId.x.move, 1, 'x naik 1 walau lewat 2 hari');
+assert.strictEqual(st6.byId.z.move, -1, 'z turun 1');
+assert.strictEqual(st6.byId.x.prevRank, 3, 'prevRank x = rank akhir hari sebelumnya');
+
 // records
 assert.strictEqual(st5.records.biggestWin.a + st5.records.biggestWin.b, 'xy', 'biggestWin tercatat');
 assert.strictEqual(st5.records.bestStreak.len, 1, 'record streak');

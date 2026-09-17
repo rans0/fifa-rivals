@@ -81,10 +81,16 @@ function computeStats(players, matches) {
 
   const daily = []; // {date, id, elo} — pemuncak ELO di akhir tiap tanggal main
   let curDate = null;
+  let dayRanks = null; // Map id->rank akhir match-day terakhir
+  let prevDayRanks = null; // Map id->rank akhir match-day sebelumnya
   const snapDay = () => {
     let top = null;
     for (const p of players) if (top === null || byId[p.id].elo > byId[top].elo) top = p.id;
     daily.push({ date: curDate, id: top, elo: byId[top].elo });
+    prevDayRanks = dayRanks;
+    dayRanks = new Map(
+      [...Object.values(byId)].sort((x, y) => y.elo - x.elo).map((s, i) => [s.id, i + 1])
+    );
   };
 
   for (const m of sortMatches(matches)) {
@@ -141,6 +147,8 @@ function computeStats(players, matches) {
     h.matches.push(m);
   }
 
+  if (curDate !== null) snapDay(); // tutup tanggal terakhir, sebelum hitung rank/move
+
   const list = Object.values(byId);
   [...list]
     .sort((x, y) => y.elo - x.elo)
@@ -148,24 +156,13 @@ function computeStats(players, matches) {
       s.rank = i + 1;
     });
 
-  // Pergerakan rank vs state sebelum match terakhir: revert ELO dua pemain
-  // di match terakhir (elo - lastDelta), ranking ulang. move > 0 naik, < 0 turun.
-  const last = valid[valid.length - 1] || null;
-  if (valid.length > 1) {
-    const prevElo = new Map(list.map((s) => [s.id, s.elo]));
-    prevElo.set(last.a, byId[last.a].elo - byId[last.a].lastDelta);
-    prevElo.set(last.b, byId[last.b].elo - byId[last.b].lastDelta);
-    [...list]
-      .sort((x, y) => prevElo.get(y.id) - prevElo.get(x.id))
-      .forEach((s, i) => {
-        s.prevRank = i + 1;
-        s.move = i + 1 - s.rank;
-      });
-  } else {
-    list.forEach((s) => {
-      s.prevRank = s.rank;
-      s.move = 0;
-    });
+  // Pergerakan rank vs akhir match day sebelumnya — ranking ulang penuh,
+  // jadi pemain yang gak main di hari terakhir pun bisa naik/tergeser.
+  // move > 0 naik, < 0 turun. Baris pertama league / pemain baru: 0.
+  for (const s of list) {
+    const pr = prevDayRanks ? prevDayRanks.get(s.id) : null;
+    s.prevRank = pr == null ? s.rank : pr;
+    s.move = pr == null ? 0 : pr - s.rank;
   }
 
   // Records
@@ -203,7 +200,6 @@ function computeStats(players, matches) {
   }
 
   const lastMatch = valid[valid.length - 1] || null;
-  if (curDate !== null) snapDay(); // tanggal terakhir
 
   return {
     byId,
