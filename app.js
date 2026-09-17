@@ -380,7 +380,7 @@ function renderMatches() {
       <span class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small> · ${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></span>
       <span class="dh-stats">⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)}${top ? ` · 🔥 ${esc(S.byId[top.id].name)} ${top.s.w}W` : ''}${lead ? ` · 👑 ${esc(S.byId[lead.id].name)} ${Math.round(lead.elo)}` : ''}</span>
     </div>`;
-    html += list.map((m) => matchRow(m, dly())).join('');
+    html += list.map((m) => matchRow(m, dly)).join('');
   }
   $('#match-list').innerHTML = html;
 }
