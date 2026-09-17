@@ -204,6 +204,17 @@ code { font: 12px var(--font-mono); color: var(--mut); }
 .tbl tbody tr.click:hover td:first-child { box-shadow: inset 3px 0 0 var(--acc); }
 .tbl .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
 .rank1 { color: var(--acc); font-weight: 800; }
+.mv {
+  display: inline-block;
+  margin-left: 7px; padding: 1px 7px;
+  border-radius: 3px;
+  font: 800 10.5px/15px var(--font-body);
+  vertical-align: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.mv.pos { background: #e2f3e9; }
+.mv.neg { background: #fde8ea; }
+.mv.zero { background: #eef1ef; }
 tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 .pos { color: var(--pos); }
 .neg { color: var(--acc); }

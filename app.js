@@ -206,8 +206,10 @@ function renderLeaderboard() {
       const dTxt = d > 0 ? `+${d}` : d < 0 ? `${d}` : '±0';
       const form = s.form.slice(-5).map((f) => `<i class="${f}">${f}</i>`).join('');
       const streak = s.curStreak.type === 'W' ? `🔥 ${s.curStreak.len}` : '—';
+      const mv = s.move || 0;
+      const mvTxt = mv > 0 ? `▲${mv}` : mv < 0 ? `▼${-mv}` : '—';
       return `<tr class="click" data-id="${esc(s.id)}">
-        <td class="${s.rank === 1 ? 'rank1' : ''}">${s.rank}</td>
+        <td class="${s.rank === 1 ? 'rank1' : ''}">${s.rank}<span class="mv ${mv > 0 ? 'pos' : mv < 0 ? 'neg' : 'zero'}">${mvTxt}</span></td>
         <td><b>${esc(s.name)}</b><span class="form">${form}</span></td>
         <td class="num"><b>${Math.round(s.elo)}</b> <span class="${dCls}">${dTxt}</span></td>
         <td class="num">${s.p}</td>
