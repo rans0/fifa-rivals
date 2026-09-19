@@ -10,7 +10,9 @@
     { "id": "tegar", "name": "Tegar" },
     { "id": "inyo", "name": "Inyo" },
     { "id": "alvin", "name": "Alvin" },
-    { "id": "dzikri", "name": "Dzikri" }
+    { "id": "dzikri", "name": "Dzikri" },
+    { "id": "iqbal", "name": "Iqbal" },
+    { "id": "aliif", "name": "Aliif" }
   ],
   "matches": [
     { "date": "2026-09-14", "a": "aran", "aClub": "Arsenal", "aScore": 1, "b": "tammam", "bClub": "Real Madrid", "bScore": 4 },
@@ -36,6 +38,14 @@
     { "date": "2026-09-17", "a": "unedo", "aClub": "AC Milan", "aScore": 3, "b": "tegar", "bClub": "Manchester City", "bScore": 4 },
     { "date": "2026-09-17", "a": "tegar", "aClub": "Manchester City", "aScore": 13, "b": "abe", "bClub": "AS Roma", "bScore": 3 },
     { "date": "2026-09-17", "a": "tegar", "aClub": "Manchester City", "aScore": 7, "b": "morte", "bClub": "Bayern Munchen", "bScore": 4 },
-    { "date": "2026-09-17", "a": "tegar", "aClub": "Manchester City", "aScore": 8, "b": "morte", "bClub": "Bayern Munchen", "bScore": 3 }
+    { "date": "2026-09-17", "a": "tegar", "aClub": "Manchester City", "aScore": 8, "b": "morte", "bClub": "Bayern Munchen", "bScore": 3 },
+    { "date": "2026-09-18", "a": "dzikri", "aClub": "Liverpool", "aScore": 4, "b": "iqbal", "bClub": "Inter Milan", "bScore": 1 },
+    { "date": "2026-09-18", "a": "tegar", "aClub": "Manchester City", "aScore": 4, "b": "unedo", "bClub": "Bayern Munchen", "bScore": 2 },
+    { "date": "2026-09-18", "a": "tegar", "aClub": "Manchester City", "aScore": 5, "b": "dzikri", "bClub": "Barcelona", "bScore": 1 },
+    { "date": "2026-09-18", "a": "abe", "aClub": "Atletico Madrid", "aScore": 5, "b": "aliif", "bClub": "AFC Bournemouth", "bScore": 4 },
+    { "date": "2026-09-18", "a": "alvin", "aClub": "France", "aScore": 6, "b": "abe", "bClub": "England", "bScore": 4 },
+    { "date": "2026-09-18", "a": "alvin", "aClub": "Barcelona", "aScore": 7, "b": "abe", "bClub": "Real Madrid", "bScore": 4 },
+    { "date": "2026-09-18", "a": "alvin", "aClub": "Real Madrid", "aScore": 4, "b": "aliif", "bClub": "Barcelona", "bScore": 3 },
+    { "date": "2026-09-18", "a": "alvin", "aClub": "PSG", "aScore": 6, "b": "aliif", "bClub": "Manchester City", "bScore": 2 }
   ]
 }
