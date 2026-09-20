@@ -80,7 +80,7 @@ function computeStats(players, matches) {
   const skipped = [];
   const valid = [];
 
-  const daily = []; // {date, id, elo} — pemuncak ELO di akhir tiap tanggal main
+  const daily = []; // {date, tops: {lg: {id, elo}}} — pemuncak ELO per liga di akhir tiap tanggal main
   let curDate = null;
   let dayRanks = null; // Map id->rank akhir match-day terakhir
   let prevDayRanks = null; // Map id->rank akhir match-day sebelumnya
@@ -99,9 +99,18 @@ function computeStats(players, matches) {
   let leagueRanks = null;
   let prevLeagueRanks = null;
   const snapDay = () => {
-    let top = null;
-    for (const p of players) if (top === null || byId[p.id].elo > byId[top].elo) top = p.id;
-    daily.push({ date: curDate, id: top, elo: byId[top].elo });
+    // pemuncak ELO per liga di akhir tanggal main (pool ELO terpisah)
+    const tops = {};
+    for (const lg of leagues) {
+      let top = null;
+      for (const p of players) {
+        const s = byId[p.id];
+        if (s.league !== lg) continue;
+        if (top === null || s.elo > byId[top].elo) top = p.id;
+      }
+      if (top !== null) tops[lg] = { id: top, elo: byId[top].elo };
+    }
+    daily.push({ date: curDate, tops });
     prevDayRanks = dayRanks;
     dayRanks = new Map(
       [...Object.values(byId)].sort((x, y) => y.elo - x.elo).map((s, i) => [s.id, i + 1])

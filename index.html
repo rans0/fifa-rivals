@@ -34,8 +34,7 @@
       <div class="view-head">
         <h2>Leaderboard</h2>
         <input id="lb-search" type="search" placeholder="Search player…" autocomplete="off">
-        <button class="btn" id="dl-standings-1">Download League 1</button>
-        <button class="btn" id="dl-standings-2">Download League 2</button>
+        <button class="btn" id="dl-standings">⬇ League 1</button>
       </div>
       <div id="lb-league-tabs">
         <button data-league="1" class="on">League 1</button>
@@ -52,8 +51,8 @@
           <th data-key="l" class="num">L</th>
           <th data-key="gf" class="num opt">GF</th>
           <th data-key="ga" class="num opt">GA</th>
-          <th data-key="diff" class="num">+/-</th>
-          <th data-key="winrate" class="num">Win %</th>
+          <th data-key="diff" class="num opt">+/-</th>
+          <th data-key="winrate" class="num opt">Win %</th>
           <th data-key="bestStreak" class="num">Win Streak</th>
         </tr></thead>
         <tbody id="lb-body"></tbody>

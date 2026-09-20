@@ -371,7 +371,7 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 
 /* ---------- match rows ---------- */
 .match {
-  display: grid; grid-template-columns: 88px 1fr 76px 1fr; align-items: center; gap: 8px;
+  display: grid; grid-template-columns: 88px minmax(0, 1fr) 76px minmax(0, 1fr); align-items: center; gap: 8px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -380,9 +380,10 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 }
 .match .date { color: var(--mut); font: 500 12px var(--font-mono); }
 .match .sub { display: block; font-size: 10px; color: var(--mut); margin-top: 2px; }
-.match .pl { display: flex; align-items: center; gap: 6px; font-weight: 700; } /* anchor sisi luar, isi mengalir ke skor */
+.match .pl { display: flex; align-items: center; gap: 6px; font-weight: 700; min-width: 0; } /* anchor sisi luar, isi mengalir ke skor */
 .match .pl.r { justify-content: flex-end; text-align: right; }
-.match .pl .cn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.match .pl .cn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.match .pl .chip, .match .pl .chip-crest { flex: none; } /* crest gak pernah penyusut */
 .match .sc {
   text-align: center;
   font: 400 25px/1 var(--font-display);
@@ -416,7 +417,7 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 }
 #lb-league-tabs button.on { color: var(--ink); border-color: var(--ink); }
 .exh-badge {
-  display: inline-block;
+  display: block; width: max-content;
   margin-top: 3px; padding: 1px 6px;
   border-radius: 3px;
   background: #eceef0; color: var(--mut);
@@ -426,11 +427,12 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 }
 .match.cross .date { opacity: 0.75; }
 @media (max-width: 560px) {
-  .match { grid-template-columns: 72px 1fr 60px 1fr; padding: 11px 12px; }
+  .match { grid-template-columns: auto minmax(0, 1fr) 60px minmax(0, 1fr); padding: 11px 12px; }
   .match .sc { font-size: 21px; }
   .reign { grid-template-columns: 1fr auto; gap: 4px 12px; }
   .reign .rn-date { grid-column: 1 / -1; }
   .reign .rn-name { font-size: 22px; }
+  .pl-elo { flex-wrap: wrap; }
 }
 
 /* ---------- player page: split hero ---------- */
@@ -445,6 +447,7 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
   animation: riseIn 0.4s ease both;
 }
 .pl-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.pl-hero > div { min-width: 0; }
 .pl-kicker { font: 500 12px var(--font-mono); letter-spacing: 0.24em; color: var(--mut); text-transform: uppercase; }
 .pl-kicker b { color: var(--acc); font-weight: 500; }
 .pl-name { font: 400 clamp(40px, 8vw, 58px)/1 var(--font-display); letter-spacing: 0.05em; margin: 12px 0 8px; }
@@ -494,7 +497,12 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
 }
 .btn:hover { background: var(--ink); color: #fff; }
 .btn:active { transform: translateY(1px); }
-.view-head .btn { margin: 0 0 0 12px; white-space: nowrap; }
+.view-head .btn {
+  display: inline-flex; align-items: center;
+  margin: 0 0 0 12px; white-space: nowrap;
+  padding: 9px 16px 8px;
+  font-size: 15px; letter-spacing: 0.08em;
+}
 .back { display: inline-block; margin-top: 22px; color: var(--mut); font: 500 13px var(--font-body); }
 .back:hover { color: var(--acc); }
 
@@ -546,6 +554,9 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
   .pl-badge { width: 72px; height: 72px; }
   .pl-badge span { font-size: 25px; }
   .pl-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 400px) {
+  .pl-grid { grid-template-columns: 1fr; } /* label box ("Goals F : A") gak muat 2 kolom di layar sempit */
 }
 
 /* ---------- motion ---------- */

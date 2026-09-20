@@ -167,10 +167,18 @@ function renderRecords() {
 
 function renderCrown() {
   const box = $('#crown');
-  if (!S.daily.length) { box.closest('.crown-sec').hidden = true; return; }
+  // crown per liga — ikut tab leaderboard aktif (pool ELO terpisah)
+  const tops = S.daily
+    .map((d) => ({ date: d.date, ...(d.tops[lbLeague] || {}) }))
+    .filter((d) => d.id);
+  const head = document.querySelector('.crown-sec h2');
+  if (head) head.textContent = `👑 Crown History — League ${lbLeague}`;
+  // heading + hint .crown-sec itu sibling #crown (bukan ancestor) — query langsung
+  document.querySelectorAll('.crown-sec').forEach((el) => { el.hidden = !tops.length; });
+  if (!tops.length) return;
   // gabung hari beruntun dgn pemuncak sama → satu era (reign)
   const reigns = [];
-  for (const d of S.daily) {
+  for (const d of tops) {
     const last = reigns[reigns.length - 1];
     if (last && last.id === d.id) { last.to = d.date; last.elo = d.elo; last.days++; }
     else reigns.push({ id: d.id, from: d.date, to: d.date, elo: d.elo, days: 1 });
@@ -197,7 +205,12 @@ function renderCrown() {
 
 function renderSash() {
   const box = $('#sash');
-  if (!S.sash.length) { box.closest('.sash-sec').hidden = true; return; }
+  // idem: .sash-sec sibling #sash — bukan ancestor
+  if (!S.sash.length) {
+    document.querySelectorAll('.sash-sec').forEach((el) => { el.hidden = true; });
+    return;
+  }
+  document.querySelectorAll('.sash-sec').forEach((el) => { el.hidden = false; });
   const cur = S.sash.length - 1;
   box.innerHTML = S.sash
     .map((r, i) => {
@@ -255,8 +268,8 @@ function renderLeaderboard() {
         <td class="num">${s.l}</td>
         <td class="num opt">${s.gf}</td>
         <td class="num opt">${s.ga}</td>
-        <td class="num ${s.diff > 0 ? 'pos' : s.diff < 0 ? 'neg' : ''}">${s.diff > 0 ? '+' : ''}${s.diff}</td>
-        <td class="num">${s.winrate}%</td>
+        <td class="num opt ${s.diff > 0 ? 'pos' : s.diff < 0 ? 'neg' : ''}">${s.diff > 0 ? '+' : ''}${s.diff}</td>
+        <td class="num opt">${s.winrate}%</td>
         <td class="num">${streak} <span style="color:var(--mut);font-size:12px">(best ${s.bestStreak})</span></td>
       </tr>`;
     })
@@ -423,7 +436,7 @@ function renderMatches() {
     if (!days.has(m.date)) days.set(m.date, []);
     days.get(m.date).push(m);
   }
-  const leaderByDate = new Map(S.daily.map((d) => [d.date, d]));
+  const kingsByDate = new Map(S.daily.map((d) => [d.date, Object.values(d.tops)]));
   const dayNo = new Map(S.daily.map((d, i) => [d.date, i + 1])); // oldest = 1
   let html = '';
   let k = 0; // stagger: tiap elemen muncul berurutan, cap 500ms
@@ -431,10 +444,11 @@ function renderMatches() {
   for (const date of [...days.keys()].sort().reverse()) {
     const list = days.get(date);
     const top = dayTopPerformer(list);
-    const lead = leaderByDate.get(date);
+    const kings = (kingsByDate.get(date) || [])
+      .map((t) => `👑 ${esc(S.byId[t.id].name)} ${Math.round(t.elo)}`).join(' · ');
     html += `<div class="day-head"${dly()}>
       <span class="dh-t">MATCH DAY ${dayNo.get(date) || ''}<small> · ${fmtDate(date)} · ${list.length} match${list.length > 1 ? 'es' : ''}</small></span>
-      <span class="dh-stats">⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)}${top ? ` · 🔥 ${esc(S.byId[top.id].name)} ${top.s.w}W` : ''}${lead ? ` · 👑 ${esc(S.byId[lead.id].name)} ${Math.round(lead.elo)}` : ''}</span>
+      <span class="dh-stats">⚽ ${list.reduce((n, m) => n + m.aScore + m.bScore, 0)}${top ? ` · 🔥 ${esc(S.byId[top.id].name)} ${top.s.w}W` : ''}${kings ? ` · ${kings}` : ''}</span>
     </div>`;
     html += list.slice().reverse().map((m) => matchRow(m, dly)).join(''); // terbaru dulu
   }
@@ -1009,11 +1023,12 @@ async function boot() {
     b.addEventListener('click', () => {
       lbLeague = +b.dataset.league;
       document.querySelectorAll('#lb-league-tabs button').forEach((x) => x.classList.toggle('on', x === b));
+      $('#dl-standings').textContent = `⬇ League ${lbLeague}`;
       renderLeaderboard();
+      renderCrown();
     })
   );
-  $('#dl-standings-1').addEventListener('click', () => downloadStandings(1));
-  $('#dl-standings-2').addEventListener('click', () => downloadStandings(2));
+  $('#dl-standings').addEventListener('click', () => downloadStandings(lbLeague));
   document.querySelectorAll('#lb-table thead th[data-key]').forEach((th) =>
     th.addEventListener('click', () => {
       const k = th.dataset.key;
