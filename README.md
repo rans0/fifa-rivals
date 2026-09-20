@@ -7,6 +7,7 @@ aggregate club) are computed client-side from `data.json`.
 ## Features
 
 - **Leaderboard**: ELO (+Δ from last match), W-D-L, GF/GA, winrate, winstreak, last-5 form. Sortable & searchable.
+- **Two leagues**: each player is in League 1 or League 2 (`league` field in `data.json`). ELO/W-D-L/form/streaks are computed **per league** — a cross-league match counts as an *Exhibition*: shown in History & H2H, but moves no ELO. Club stats and the sash stay global.
 - **Reigning champion**: banner for the latest match winner (bragging-rights focus).
 - **Head-to-head**: matrix of all players + per-pair duel details.
 - **Club**: per-club stats (global & per player) + real crests.
@@ -27,7 +28,7 @@ Edit `data.json`:
 
 - `a`/`b` = player slots 1 & 2 — **not home/away**, no advantage.
 - Club names must be exactly consistent (always `PSG`, never sometimes `Paris Saint Germain`) so aggregates are correct.
-- New player: add `{ "id": "baru", "name": "Baru" }` under `players`.
+- New player: add `{ "id": "baru", "name": "Baru", "league": 1 }` under `players` (`league`: 1 or 2 — decides the ELO pool).
 - Commit → `git pull` on the VPS → live.
 
 ### Adding a new club crest

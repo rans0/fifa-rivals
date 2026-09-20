@@ -34,7 +34,12 @@
       <div class="view-head">
         <h2>Leaderboard</h2>
         <input id="lb-search" type="search" placeholder="Search player…" autocomplete="off">
-        <button class="btn" id="dl-standings">Download Top 5</button>
+        <button class="btn" id="dl-standings-1">Download League 1</button>
+        <button class="btn" id="dl-standings-2">Download League 2</button>
+      </div>
+      <div id="lb-league-tabs">
+        <button data-league="1" class="on">League 1</button>
+        <button data-league="2">League 2</button>
       </div>
       <div class="tbl-wrap"><table class="tbl" id="lb-table">
         <thead><tr>
@@ -128,14 +133,17 @@
           <li><b>Match order:</b> matches are processed in date order (same date → order in <code>data.json</code>), each match using the ratings left by the previous one.</li>
         </ul>
 
+        <h3>League 1 &amp; League 2</h3>
+        <p>Players are split into two leagues, each with its own ELO pool (everyone still starts at 1200). <b>ELO, W-D-L, form, streaks, GF/GA and the leaderboard are computed only from same-league matches.</b> A match between players of different leagues is recorded in Match History and Head-to-Head as an <b>Exhibition</b> — it changes no ratings and no records, so there is no ELO farming across leagues. Club stats (global &amp; per player) and the King of the Hill sash <b>do</b> count every match.</p>
+
         <h3>Leaderboard terms</h3>
         <div class="tbl-wrap"><table class="tbl">
           <thead><tr><th>Term</th><th>Definition</th></tr></thead>
           <tbody>
-            <tr><td><b># Rank</b></td><td>Position by current ELO, highest first. This is the league standing — there is no separate point system.</td></tr>
-            <tr><td><b>Move ▲▼</b></td><td>Rank change vs the end of the <b>previous match day</b>. The table is fully re-ranked, so a player who didn't play can still rise or be overtaken. New row = <i>—</i>.</td></tr>
-            <tr><td><b>ELO ±Δ</b></td><td>Current rating, plus the change from the player's most recent match.</td></tr>
-            <tr><td><b>MP W D L</b></td><td>Matches played, wins, draws, losses.</td></tr>
+            <tr><td><b># Rank</b></td><td>Position by current ELO <b>within the player's league</b>, highest first. This is the league standing — there is no separate point system.</td></tr>
+            <tr><td><b>Move ▲▼</b></td><td>Rank change vs the end of the <b>previous match day</b>, within the same league. The table is fully re-ranked, so a player who didn't play can still rise or be overtaken. New row = <i>—</i>.</td></tr>
+            <tr><td><b>ELO ±Δ</b></td><td>Current rating, plus the change from the player's most recent league match (exhibitions never move it).</td></tr>
+            <tr><td><b>MP W D L</b></td><td>Matches played, wins, draws, losses — same-league matches only; exhibitions are not counted.</td></tr>
             <tr><td><b>GF GA</b></td><td>Goals for / against, summed over all matches.</td></tr>
             <tr><td><b>+/-</b></td><td>Goal difference = GF − GA.</td></tr>
             <tr><td><b>Win %</b></td><td>W ÷ MP as a percentage, rounded to one decimal.</td></tr>

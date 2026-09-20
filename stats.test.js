@@ -187,4 +187,37 @@ assert.strictEqual(sash[1].current, true, 'y juara saat ini');
 // juara tak main → sabuk diam (match z-w tidak bikin era baru)
 assert.strictEqual(computeSash([]).length, 0, 'no match no sash');
 
+// ---- liga: ELO/W-D-L hanya sesama liga; antar liga = exhibition ----
+const playersL = [
+  { id: 'a1', name: 'A1', league: 1 },
+  { id: 'b1', name: 'B1', league: 1 },
+  { id: 'a2', name: 'A2', league: 2 },
+];
+const stL = computeStats(playersL, [
+  { date: '2026-01-01', a: 'a1', aClub: 'A', aScore: 2, b: 'b1', bClub: 'B', bScore: 1 }, // sesama liga 1
+  { date: '2026-01-02', a: 'a1', aClub: 'A', aScore: 5, b: 'a2', bClub: 'C', bScore: 0 }, // antar liga → exhibition
+]);
+// exhibition: tidak menggeser ELO / W-D-L / form
+assert.strictEqual(stL.byId.a1.p, 1, 'a1 cuma 1 match terhitung');
+assert.strictEqual(stL.byId.a1.w, 1, 'a1 menang 1 (exhibition gak dihitung)');
+assert.strictEqual(stL.byId.a1.elo, ELO_BASE + 16, 'elo a1 tetap +16, exhibition nihil');
+assert.strictEqual(stL.byId.a2.elo, ELO_BASE, 'elo a2 tetap 1200');
+assert.strictEqual(stL.byId.a2.p, 0, 'a2 belum ada match liga');
+// flag crossLeague + eloDelta null utk render badge
+assert.strictEqual(stL.lastMatch.crossLeague, true, 'match terakhir = cross league');
+assert.strictEqual(stL.lastMatch.eloDelta, null, 'exhibition tanpa eloDelta');
+assert.strictEqual(stL.byId.a1.lastDelta, 16, 'lastDelta a1 dari match liga, bukan exhibition');
+// h2h + club (global & per pemain) tetap mencatat exhibition
+assert.strictEqual(stL.h2h['a1|a2'].matches.length, 1, 'h2h tetap catat exhibition');
+assert.strictEqual(stL.clubs.C.p, 1, 'club stat global tetap catat exhibition');
+assert.strictEqual(stL.byId.a1.clubs.A.p, 2, 'club per pemain global: A dipakai di kedua match');
+// leagueRank terpisah: a2 sendirian di liga 2 → rank 1 walau ELO 1200
+assert.strictEqual(stL.byId.a2.leagueRank, 1, 'a2 #1 liga 2');
+assert.strictEqual(stL.byId.a1.leagueRank, 1, 'a1 #1 liga 1');
+assert.strictEqual(stL.byId.b1.leagueRank, 2, 'b1 #2 liga 1');
+// sash tetap global: pemenang match pertama (a1) lalu pertahankan via exhibition? tidak —
+// exhibition tetap match gelar (sash global semua match): a1 menang exhibition → defense
+assert.strictEqual(stL.sash.length, 1, 'sash: 1 era');
+assert.strictEqual(stL.sash[0].defenses, 1, 'exhibition tetap jadi defense sash');
+
 console.log('✓ semua test lolos');

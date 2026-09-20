@@ -1,18 +1,18 @@
 {
-  "_comment": "Tambah match baru: copy 1 baris di 'matches', isi date (YYYY-MM-DD), id pemain, club, skor. Pemain baru: tambah di 'players'. Setelah edit: commit, lalu di VPS 'git pull'. Nama club harus konsisten persis (contoh selalu 'PSG', bukan kadang 'Paris') biar aggregate benar.",
+  "_comment": "Tambah match baru: copy 1 baris di 'matches', isi date (YYYY-MM-DD), id pemain, club, skor. Pemain baru: tambah di 'players' (isi 'league': 1 atau 2 — ELO hanya dihitung sesama liga). Setelah edit: commit, lalu di VPS 'git pull'. Nama club harus konsisten persis (contoh selalu 'PSG', bukan kadang 'Paris') biar aggregate benar.",
   "players": [
-    { "id": "aran", "name": "Aran" },
-    { "id": "tammam", "name": "Tammam" },
-    { "id": "unedo", "name": "Unedo" },
-    { "id": "amirul", "name": "Amirul" },
-    { "id": "morte", "name": "Morte" },
-    { "id": "abe", "name": "Abe" },
-    { "id": "tegar", "name": "Tegar" },
-    { "id": "inyo", "name": "Inyo" },
-    { "id": "alvin", "name": "Alvin" },
-    { "id": "dzikri", "name": "Dzikri" },
-    { "id": "iqbal", "name": "Iqbal" },
-    { "id": "aliif", "name": "Aliif" }
+    { "id": "aran", "name": "Aran", "league": 1 },
+    { "id": "tammam", "name": "Tammam", "league": 1 },
+    { "id": "unedo", "name": "Unedo", "league": 1 },
+    { "id": "amirul", "name": "Amirul", "league": 1 },
+    { "id": "morte", "name": "Morte", "league": 1 },
+    { "id": "tegar", "name": "Tegar", "league": 1 },
+    { "id": "inyo", "name": "Inyo", "league": 1 },
+    { "id": "abe", "name": "Abe", "league": 2 },
+    { "id": "alvin", "name": "Alvin", "league": 2 },
+    { "id": "dzikri", "name": "Dzikri", "league": 2 },
+    { "id": "iqbal", "name": "Iqbal", "league": 2 },
+    { "id": "aliif", "name": "Aliif", "league": 2 }
   ],
   "matches": [
     { "date": "2026-09-14", "a": "aran", "aClub": "Arsenal", "aScore": 1, "b": "tammam", "bClub": "Real Madrid", "bScore": 4 },

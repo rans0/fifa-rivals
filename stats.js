@@ -22,6 +22,7 @@ function newPlayerStat(p) {
   return {
     id: p.id,
     name: p.name,
+    league: p.league || 1,
     elo: ELO_BASE,
     peakElo: ELO_BASE,
     lastDelta: 0,
@@ -83,6 +84,20 @@ function computeStats(players, matches) {
   let curDate = null;
   let dayRanks = null; // Map id->rank akhir match-day terakhir
   let prevDayRanks = null; // Map id->rank akhir match-day sebelumnya
+  const leagues = [...new Set(players.map((p) => p.league || 1))];
+  // Map id->rank dalam liganya (ELO pool terpisah per liga)
+  const leagueRanksOf = (map) => {
+    const m = new Map();
+    for (const lg of leagues) {
+      Object.values(map)
+        .filter((s) => s.league === lg)
+        .sort((x, y) => y.elo - x.elo)
+        .forEach((s, i) => m.set(s.id, i + 1));
+    }
+    return m;
+  };
+  let leagueRanks = null;
+  let prevLeagueRanks = null;
   const snapDay = () => {
     let top = null;
     for (const p of players) if (top === null || byId[p.id].elo > byId[top].elo) top = p.id;
@@ -91,6 +106,8 @@ function computeStats(players, matches) {
     dayRanks = new Map(
       [...Object.values(byId)].sort((x, y) => y.elo - x.elo).map((s, i) => [s.id, i + 1])
     );
+    prevLeagueRanks = leagueRanks;
+    leagueRanks = leagueRanksOf(byId);
   };
 
   for (const m of sortMatches(matches)) {
@@ -113,22 +130,27 @@ function computeStats(players, matches) {
 
     const aWin = m.aScore > m.bScore;
     const draw = m.aScore === m.bScore;
+    m.crossLeague = A.league !== B.league; // exhibition: di-record, tapi ELO/W-D-L tidak dihitung
 
-    // ELO
-    const ea = expectedScore(A.elo, B.elo);
-    const dA = Math.round(ELO_K * ((draw ? 0.5 : aWin ? 1 : 0) - ea));
-    m.eloDelta = dA; // gain ELO sisi a (dipakai chip pergerakan di match list)
-    A.elo += dA;
-    B.elo -= dA;
-    A.lastDelta = dA;
-    B.lastDelta = -dA;
-    A.eloHist.push(A.elo);
-    B.eloHist.push(B.elo);
-    if (A.elo > A.peakElo) A.peakElo = A.elo;
-    if (B.elo > B.peakElo) B.peakElo = B.elo;
+    if (m.crossLeague) {
+      m.eloDelta = null; // tanpa chip ELO di match list
+    } else {
+      // ELO
+      const ea = expectedScore(A.elo, B.elo);
+      const dA = Math.round(ELO_K * ((draw ? 0.5 : aWin ? 1 : 0) - ea));
+      m.eloDelta = dA; // gain ELO sisi a (dipakai chip pergerakan di match list)
+      A.elo += dA;
+      B.elo -= dA;
+      A.lastDelta = dA;
+      B.lastDelta = -dA;
+      A.eloHist.push(A.elo);
+      B.eloHist.push(B.elo);
+      if (A.elo > A.peakElo) A.peakElo = A.elo;
+      if (B.elo > B.peakElo) B.peakElo = B.elo;
 
-    applyResult(A, aWin ? 'W' : draw ? 'D' : 'L', m.aScore, m.bScore);
-    applyResult(B, aWin ? 'L' : draw ? 'D' : 'W', m.bScore, m.aScore);
+      applyResult(A, aWin ? 'W' : draw ? 'D' : 'L', m.aScore, m.bScore);
+      applyResult(B, aWin ? 'L' : draw ? 'D' : 'W', m.bScore, m.aScore);
+    }
     bumpClub(A.clubs, m.aClub || '?', m.aScore, m.bScore);
     bumpClub(B.clubs, m.bClub || '?', m.bScore, m.aScore);
     bumpClub(clubs, m.aClub || '?', m.aScore, m.bScore);
@@ -164,6 +186,13 @@ function computeStats(players, matches) {
     const pr = prevDayRanks ? prevDayRanks.get(s.id) : null;
     s.prevRank = pr == null ? s.rank : pr;
     s.move = pr == null ? 0 : pr - s.rank;
+  }
+
+  // Rank & pergerakan dalam liga masing-masing (pool ELO terpisah)
+  for (const s of list) {
+    s.leagueRank = leagueRanks ? leagueRanks.get(s.id) : s.rank;
+    const plr = prevLeagueRanks ? prevLeagueRanks.get(s.id) : null;
+    s.leagueMove = plr == null ? 0 : plr - s.leagueRank;
   }
 
   // Records

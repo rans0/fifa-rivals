@@ -402,6 +402,29 @@ tr.click td:first-child:has(.rank1) { box-shadow: inset 3px 0 0 var(--acc); }
   vertical-align: 2px;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- liga tabs + badge exhibition ---------- */
+#lb-league-tabs { display: flex; gap: 8px; margin: 14px 0 12px; }
+#lb-league-tabs button {
+  background: transparent; color: var(--mut);
+  border: 1.5px solid var(--line); border-radius: 4px;
+  padding: 8px 18px 7px;
+  font: 400 16px/1 var(--font-display);
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+#lb-league-tabs button.on { color: var(--ink); border-color: var(--ink); }
+.exh-badge {
+  display: inline-block;
+  margin-top: 3px; padding: 1px 6px;
+  border-radius: 3px;
+  background: #eceef0; color: var(--mut);
+  font: 800 9.5px/14px var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.match.cross .date { opacity: 0.75; }
 @media (max-width: 560px) {
   .match { grid-template-columns: 72px 1fr 60px 1fr; padding: 11px 12px; }
   .match .sc { font-size: 21px; }

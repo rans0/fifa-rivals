@@ -4,6 +4,7 @@
 let DATA = null; // data.json mentah
 let S = null; // hasil computeStats
 let lbSort = { key: 'elo', dir: -1 };
+let lbLeague = 1; // liga leaderboard aktif (1 | 2) — ELO pool terpisah
 
 /* ---------- util ---------- */
 
@@ -225,7 +226,7 @@ function renderLeaderboard() {
   const q = ($('#lb-search').value || '').toLowerCase();
   const diff = (s) => s.gf - s.ga;
   const rows = S.list
-    .filter((s) => s.name.toLowerCase().includes(q))
+    .filter((s) => s.league === lbLeague && s.name.toLowerCase().includes(q))
     .map((s) => ({ ...s, diff: diff(s), winrate: wr(s) }));
   const key = lbSort.key;
   const val = (s) =>
@@ -242,10 +243,10 @@ function renderLeaderboard() {
       const dTxt = d > 0 ? `+${d}` : d < 0 ? `${d}` : '±0';
       const form = s.form.slice(-5).map((f) => `<i class="${f}">${f}</i>`).join('');
       const streak = s.curStreak.type === 'W' ? `🔥 ${s.curStreak.len}` : '—';
-      const mv = s.move || 0;
+      const mv = s.leagueMove || 0;
       const mvTxt = mv > 0 ? `▲${mv}` : mv < 0 ? `▼${-mv}` : '—';
       return `<tr class="click" data-id="${esc(s.id)}">
-        <td class="${s.rank === 1 ? 'rank1' : ''}">${s.rank}<span class="mv ${mv > 0 ? 'pos' : mv < 0 ? 'neg' : 'zero'}">${mvTxt}</span></td>
+        <td class="${s.leagueRank === 1 ? 'rank1' : ''}">${s.leagueRank}<span class="mv ${mv > 0 ? 'pos' : mv < 0 ? 'neg' : 'zero'}">${mvTxt}</span></td>
         <td><b>${esc(s.name)}</b><span class="form">${form}</span></td>
         <td class="num"><b>${Math.round(s.elo)}</b> <span class="${dCls}">${dTxt}</span></td>
         <td class="num">${s.p}</td>
@@ -324,8 +325,8 @@ function showPair(x, y) {
       const sY = isAfirst ? m.bScore : m.aScore;
       const clubX = isAfirst ? m.aClub : m.bClub;
       const clubY = isAfirst ? m.bClub : m.aClub;
-      return `<div class="match">
-        <span class="date">${fmtDate(m.date)}</span>
+      return `<div class="match${m.crossLeague ? ' cross' : ''}">
+        <span class="date">${fmtDate(m.date)}${exhBadge(m)}</span>
         <span class="pl">${chip(clubX)}<span class="cn ${sX > sY ? 'win' : ''}">${esc(X.name)}${sX > sY ? ' 🏆' : ''}</span></span>
         <span class="sc">${sX}–${sY}</span>
         <span class="pl r"><span class="cn ${sY > sX ? 'win' : ''}">${esc(Y.name)}${sY > sX ? ' 🏆' : ''}</span>${chip(clubY)}</span>
@@ -394,6 +395,8 @@ function dayTopPerformer(list) {
 }
 
 // Baris satu match + chip ELO pemenang & highlight big win (margin ≥ 4)
+// Badge exhibition: match antar liga — tanpa ELO/W-D-L
+const exhBadge = (m) => (m.crossLeague ? '<span class="exh-badge">Exhibition</span>' : '');
 function matchRow(m, dly) {
   const aWin = m.aScore > m.bScore;
   const draw = m.aScore === m.bScore;
@@ -403,8 +406,8 @@ function matchRow(m, dly) {
     const gain = winner === 'a' ? m.eloDelta : -m.eloDelta;
     return gain > 0 ? `<span class="elo-chip">+${gain}</span>` : '';
   };
-  return `<div class="match${big ? ' big' : ''}"${dly()}>
-    <span class="date">${fmtDate(m.date)}<span class="sub">${m.aScore + m.bScore} goals</span></span>
+  return `<div class="match${big ? ' big' : ''}${m.crossLeague ? ' cross' : ''}"${dly()}>
+    <span class="date">${fmtDate(m.date)}${exhBadge(m)}<span class="sub">${m.aScore + m.bScore} goals</span></span>
     <span class="pl">${chip(m.aClub)}<span class="cn ${aWin ? 'win' : ''}">${esc(S.byId[m.a].name)}${aWin ? ' 🏆' : draw ? ' 🤝' : ''}${eloChip('a')}</span></span>
     <span class="sc">${m.aScore}–${m.bScore}</span>
     <span class="pl r"><span class="cn ${!aWin && !draw ? 'win' : ''}">${esc(S.byId[m.b].name)}${!aWin && !draw ? ' 🏆' : draw ? ' 🤝' : ''}${eloChip('b')}</span>${chip(m.bClub)}</span>
@@ -450,7 +453,8 @@ function renderPlayer(id) {
     .sort((x, y) => (x.date === y.date ? 0 : x.date < y.date ? 1 : -1));
   const d = s.lastDelta;
   // tooltip sparkline: eloHist[i] ↔ match ke-i pemain (hist[0] = start 1200)
-  const asc = myMatches.slice().reverse();
+  // exhibition (antar liga) tidak menggeser eloHist → tidak dihitung di sini
+  const asc = myMatches.filter((m) => !m.crossLeague).slice().reverse();
   const sparkTitles = s.eloHist.map((v, i) => {
     const m = asc[i - 1];
     if (!m) return i === 0 ? `${v} ELO · start` : `${v} ELO`;
@@ -465,13 +469,13 @@ function renderPlayer(id) {
     <div class="pl-head">
       <div class="pl-hero">
         <div>
-          <div class="pl-kicker">${s.rank === 1 ? '<b>#1</b> · LEAGUE LEADER' : `RANK <b>#${s.rank}</b>`}</div>
+          <div class="pl-kicker">${s.leagueRank === 1 ? '<b>#1</b> · LEAGUE ' + s.league + ' LEADER' : `LEAGUE ${s.league} · RANK <b>#${s.leagueRank}</b>`}</div>
           <div class="pl-name">${esc(s.name)}</div>
           <div class="pl-elo">${Math.round(s.elo)} <small>ELO</small>
             <span class="pl-delta ${d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero'}">${d > 0 ? '▲+' : d < 0 ? '▼' : '±'}${Math.abs(d)}</span>
           </div>
         </div>
-        <div class="pl-badge${s.rank === 1 ? ' r1' : ''}"><span>#${s.rank}</span></div>
+        <div class="pl-badge${s.leagueRank === 1 ? ' r1' : ''}"><span>#${s.leagueRank}</span></div>
       </div>
       ${sparkSVG(s.eloHist, 560, 96, '#e11d2e', 'rgba(225,29,46,.10)', sparkTitles)}
       <div class="pl-grid">
@@ -542,8 +546,8 @@ function renderPlayer(id) {
           const opp = slotA ? m.b : m.a;
           const myClub = slotA ? m.aClub : m.bClub;
           const opClub = slotA ? m.bClub : m.aClub;
-          return `<div class="match">
-            <span class="date">${fmtDate(m.date)}</span>
+          return `<div class="match${m.crossLeague ? ' cross' : ''}">
+            <span class="date">${fmtDate(m.date)}${exhBadge(m)}</span>
             <span class="pl">${chip(myClub)}<span class="cn ${my > op ? 'win' : my < op ? 'neg' : ''}">${esc(s.name)}</span></span>
             <span class="sc">${my}–${op}</span>
             <span class="pl r"><span class="cn">${esc(S.byId[opp].name)}</span>${chip(opClub)}</span>
@@ -619,7 +623,7 @@ function drawCard(s) {
   }
   ctx.textAlign = 'left';
   ctx.fillStyle = MUT; ctx.font = FONT(600, 26);
-  ctx.fillText(`RANK #${s.rank}  ·  PEAK ELO ${Math.round(s.peakElo)}`, M, 240);
+  ctx.fillText(`LEAGUE ${s.league}  ·  RANK #${s.leagueRank}  ·  PEAK ELO ${Math.round(s.peakElo)}`, M, 240);
   ctx.fillStyle = INK;
   ctx.font = BEB(fitText(s.name.toUpperCase(), W - 2 * M - 260, 150, BEB));
   ctx.fillText(s.name.toUpperCase(), M, 420);
@@ -627,7 +631,7 @@ function drawCard(s) {
   // badge rank — kanan atas hero
   const bx = W - M - 105, by = 330;
   ctx.beginPath(); ctx.arc(bx, by, 105, 0, Math.PI * 2);
-  if (s.rank === 1) {
+  if (s.leagueRank === 1) {
     ctx.fillStyle = RED; ctx.fill();
     ctx.fillStyle = '#ffffff';
   } else {
@@ -636,8 +640,8 @@ function drawCard(s) {
     ctx.fillStyle = INK;
   }
   ctx.textAlign = 'center';
-  ctx.font = FONT(800, 34); ctx.fillText('RANK', bx, by - 16);
-  ctx.font = BEB(104); ctx.fillText(`#${s.rank}`, bx, by + 68);
+  ctx.font = FONT(800, 34); ctx.fillText('LEAGUE ' + s.league, bx, by - 16);
+  ctx.font = BEB(104); ctx.fillText(`#${s.leagueRank}`, bx, by + 68);
 
   // ELO centerpiece — angka raksasa, sparkline nyambung langsung di bawahnya
   ctx.textAlign = 'left';
@@ -795,7 +799,7 @@ async function downloadCard(s) {
 
 /* ---------- standings card (canvas → PNG, top 5) ---------- */
 
-function drawStandings() {
+function drawStandings(league) {
   const W = 1080, H = 1920; // ukuran Instagram Story (9:16)
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
@@ -835,10 +839,10 @@ function drawStandings() {
   ctx.fillStyle = MUT; ctx.font = FONT(600, 30);
   ctx.fillText('FIFA RIVALS LEAGUE', M, 200);
   ctx.fillStyle = INK; ctx.font = BEB(120);
-  ctx.fillText('STANDINGS', M, 318);
+  ctx.fillText('LEAGUE ' + league, M, 318);
 
   // column labels + hairline — slot x fixed biar semua baris rata sempurna
-  const top = [...S.list].sort((a, b) => a.rank - b.rank).slice(0, 10);
+  const top = [...S.list].filter((s) => s.league === league).sort((a, b) => a.leagueRank - b.leagueRank).slice(0, 10);
   const xMP = W - M - 370, xRec = W - M - 180, xElo = W - M;
   ctx.fillStyle = MUT; ctx.font = FONT(700, 24);
   ctx.fillText('#', M + 6, 440);
@@ -854,7 +858,7 @@ function drawStandings() {
   const RH = 112, y0 = 470;
   top.forEach((s, i) => {
     const rs = y0 + i * RH, cy = rs + RH / 2;
-    const lead = s.rank === 1;
+    const lead = s.leagueRank === 1;
     if (i % 2 === 1) { // zebra
       ctx.fillStyle = PAPER; ctx.fillRect(M - 16, rs, W - 2 * M + 32, RH);
     }
@@ -864,9 +868,9 @@ function drawStandings() {
     // rank
     ctx.textAlign = 'left';
     ctx.fillStyle = lead ? RED : INK; ctx.font = BEB(58);
-    ctx.fillText(String(s.rank), M + 6, cy + 20);
+    ctx.fillText(String(s.leagueRank), M + 6, cy + 20);
     // badge pergerakan — slot fixed, bukan nempel nama
-    const mv = s.move, bW = 54, bH = 32, bX = M + 74, bY = cy - bH / 2;
+    const mv = s.leagueMove, bW = 54, bH = 32, bX = M + 74, bY = cy - bH / 2;
     rr(bX, bY, bW, bH, 9);
     if (mv > 0) ctx.fillStyle = '#0a7a3c';
     else if (mv < 0) ctx.fillStyle = RED;
@@ -936,12 +940,12 @@ function drawStandings() {
   return cv;
 }
 
-async function downloadStandings() {
+async function downloadStandings(league) {
   await document.fonts.ready;
-  drawStandings().toBlob((blob) => {
+  drawStandings(league).toBlob((blob) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'fifa-rivals-standings.png';
+    a.download = `fifa-rivals-standings-league${league}.png`;
     a.click();
     URL.revokeObjectURL(a.href);
   });
@@ -1001,7 +1005,15 @@ async function boot() {
   renderSash();
 
   $('#lb-search').addEventListener('input', renderLeaderboard);
-  $('#dl-standings').addEventListener('click', downloadStandings);
+  document.querySelectorAll('#lb-league-tabs button').forEach((b) =>
+    b.addEventListener('click', () => {
+      lbLeague = +b.dataset.league;
+      document.querySelectorAll('#lb-league-tabs button').forEach((x) => x.classList.toggle('on', x === b));
+      renderLeaderboard();
+    })
+  );
+  $('#dl-standings-1').addEventListener('click', () => downloadStandings(1));
+  $('#dl-standings-2').addEventListener('click', () => downloadStandings(2));
   document.querySelectorAll('#lb-table thead th[data-key]').forEach((th) =>
     th.addEventListener('click', () => {
       const k = th.dataset.key;
