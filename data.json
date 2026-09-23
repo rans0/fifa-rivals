@@ -46,6 +46,13 @@
     { "date": "2026-09-18", "a": "alvin", "aClub": "France", "aScore": 6, "b": "abe", "bClub": "England", "bScore": 4 },
     { "date": "2026-09-18", "a": "alvin", "aClub": "Barcelona", "aScore": 7, "b": "abe", "bClub": "Real Madrid", "bScore": 4 },
     { "date": "2026-09-18", "a": "alvin", "aClub": "Real Madrid", "aScore": 4, "b": "aliif", "bClub": "Barcelona", "bScore": 3 },
-    { "date": "2026-09-18", "a": "alvin", "aClub": "PSG", "aScore": 6, "b": "aliif", "bClub": "Manchester City", "bScore": 2 }
+    { "date": "2026-09-18", "a": "alvin", "aClub": "PSG", "aScore": 6, "b": "aliif", "bClub": "Manchester City", "bScore": 2 },
+    { "date": "2026-09-21", "a": "aran", "aClub": "PSG", "aScore": 3, "b": "unedo", "bClub": "Dortmund", "bScore": 1 },
+    { "date": "2026-09-21", "a": "aran", "aClub": "PSG", "aScore": 3, "b": "inyo", "bClub": "Barcelona", "bScore": 4 },
+    { "date": "2026-09-23", "a": "tegar", "aClub": "Manchester City", "aScore": 3, "b": "inyo", "bClub": "Barcelona", "bScore": 2 },
+    { "date": "2026-09-23", "a": "tegar", "aClub": "Manchester City", "aScore": 1, "b": "inyo", "bClub": "Barcelona", "bScore": 5 },
+    { "date": "2026-09-23", "a": "aran", "aClub": "Liverpool", "aScore": 2, "b": "inyo", "bClub": "Barcelona", "bScore": 4 },
+    { "date": "2026-09-23", "a": "aran", "aClub": "Inter Milan", "aScore": 5, "b": "inyo", "bClub": "Real Madrid", "bScore": 2 },
+    { "date": "2026-09-23", "a": "aran", "aClub": "Inter Milan", "aScore": 5, "b": "tegar", "bClub": "Manchester City", "bScore": 3 }
   ]
 }
